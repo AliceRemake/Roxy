@@ -42,9 +42,9 @@ template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, T
 
 #if ROXY_ENABLE_ASSERT
 #include <cassert>
-#define MI_ASSERT(Expr) do { assert(Expr); } while(0)
+#define ROXY_ASSERT(Expr) do { assert(Expr); } while(0)
 #else
-#define MI_ASSERT(Expr)
+#define ROXY_ASSERT(Expr)
 #endif
 
 #if ROXY_ENABLE_NODISCARD
