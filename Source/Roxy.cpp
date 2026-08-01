@@ -1,9 +1,13 @@
 #include "Roxy.h"
 
-#include "Core.h"
+#include <RoxyFmt.h>
 
-int main()
+int main(const Int32 Argc, const char** Argv)
 {
-	std::cout << "Hello Roxy!\n";
+    (void)Argc;
+    (void)Argv;
+
+    RoxyFmt::Println("Hello Roxy!");
+
 	return 0;
 }

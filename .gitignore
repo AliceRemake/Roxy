@@ -47,5 +47,6 @@ _deps
 CMakeUserPresets.json
 
 ### Custom
+.git
 .idea
 cmake-build-*
