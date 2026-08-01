@@ -1,6 +1,9 @@
 #include "RoxyLog.h"
 
-void RoxyLog::SetLevel(const ELogLevel LogLevel)
+namespace Roxy::Log
+{
+
+void SetLevel(const ELogLevel LogLevel) noexcept
 {
     if (LogLevel == ELogLevel::Trace)
     {
@@ -32,7 +35,7 @@ void RoxyLog::SetLevel(const ELogLevel LogLevel)
     }
 }
 
-void RoxyLog::SetPattern(FString Pattern, const ELogTime LogTime)
+void SetPattern(FString Pattern, const ELogTime LogTime) noexcept
 {
     if (LogTime == ELogTime::Local)
     {
@@ -42,4 +45,6 @@ void RoxyLog::SetPattern(FString Pattern, const ELogTime LogTime)
     {
         spdlog::set_pattern(std::move(Pattern), spdlog::pattern_time_type::utc);
     }
+}
+
 }

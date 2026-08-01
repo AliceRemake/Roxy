@@ -7,37 +7,37 @@
 
 #include <RoxySTD.h>
 
-namespace RoxyFmt
+namespace Roxy::Fmt
 {
 
 template <typename... T> using FormatString = fmt::format_string<T...>;
 
 template <typename... T>
-void Print(FILE* File, FormatString<T...> FormatString, T&&... Args)
+ROXY_INLINE void Print(FILE* File, FormatString<T...> FormatString, T&&... Args) noexcept
 {
     fmt::print(File, FormatString, std::forward<T>(Args)...);
 }
 
 template <typename... T>
-void Print(FormatString<T...> FormatString, T&&... Args)
+ROXY_INLINE void Print(FormatString<T...> FormatString, T&&... Args) noexcept
 {
     Print(stdout, FormatString, std::forward<T>(Args)...);
 }
 
 template <typename... T>
-void Println(FILE* File, FormatString<T...> FormatString, T&&... Args)
+ROXY_INLINE void Println(FILE* File, FormatString<T...> FormatString, T&&... Args) noexcept
 {
     fmt::println(File, FormatString, std::forward<T>(Args)...);
 }
 
 template <typename... T>
-void Println(FormatString<T...> FormatString, T&&... Args)
+ROXY_INLINE void Println(FormatString<T...> FormatString, T&&... Args) noexcept
 {
     Println(stdout, FormatString, std::forward<T>(Args)...);
 }
 
 template <typename... T>
-ROXY_NODISCARD ROXY_INLINE FString Format(FormatString<T...> Fmt, T&&... Args)
+ROXY_NODISCARD ROXY_INLINE FString Format(FormatString<T...> Fmt, T&&... Args) noexcept
 {
     return fmt::format(Fmt, std::forward<T>(Args)...);
 }

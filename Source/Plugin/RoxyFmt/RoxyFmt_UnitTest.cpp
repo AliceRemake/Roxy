@@ -5,12 +5,12 @@
 
 TEST_CASE("Print && Println")
 {
-    RoxyFmt::Print("Hello RoxyFmt!\n");
-    RoxyFmt::Println("Hello RoxyFmt!");
+    Roxy::Fmt::Print("Hello RoxyFmt!\n");
+    Roxy::Fmt::Println("Hello RoxyFmt!");
 }
 
 TEST_CASE("Format")
 {
-    const FString Str = RoxyFmt::Format("Hello {}!\n", "RoxyFmt");
+    const FString Str = Roxy::Fmt::Format("Hello {}!\n", "RoxyFmt");
     DOCTEST_CHECK_EQ(Str, "Hello RoxyFmt!\n");
 }

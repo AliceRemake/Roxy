@@ -7,20 +7,20 @@ constexpr FStringView PluginName = "RoxyLog";
 
 TEST_CASE("Log")
 {
-    RoxyLog::SetLevel(RoxyLog::ELogLevel::Trace);
-    RoxyLog::SetPattern("[%Y-%m-%d][%H:%M:%S][%^%L%$][%@][%!]%v");
+    Roxy::Log::SetLevel(Roxy::Log::ELogLevel::Trace);
+    Roxy::Log::SetPattern("[%Y-%m-%d][%H:%M:%S][%^%L%$][%@][%!]%v");
 
-    RoxyLog::Trace(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Trace");
-    RoxyLog::Debug(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Debug");
-    RoxyLog::Info (RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Info" );
-    RoxyLog::Warn (RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Warn" );
-    RoxyLog::Error(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Error");
-    RoxyLog::Fatal(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Fatal");
+    Roxy::Log::Trace(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Trace");
+    Roxy::Log::Debug(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Debug");
+    Roxy::Log::Info (Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Info" );
+    Roxy::Log::Warn (Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Warn" );
+    Roxy::Log::Error(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Error");
+    Roxy::Log::Fatal(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Fatal");
 
-    ROXY_TRACE(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Trace");
-    ROXY_DEBUG(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Debug");
-    ROXY_INFO (RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Info" );
-    ROXY_WARN (RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Warn" );
-    ROXY_ERROR(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Error");
-    ROXY_FATAL(RoxyLog::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Fatal");
+    ROXY_TRACE(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Trace");
+    ROXY_DEBUG(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Debug");
+    ROXY_INFO (Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Info" );
+    ROXY_WARN (Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Warn" );
+    ROXY_ERROR(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Error");
+    ROXY_FATAL(Roxy::Log::ELogCategory::Default, "Hello {}! This Is {}", PluginName, "Fatal");
 }

@@ -9,9 +9,10 @@ endif()
 ADD_SUBDIRECTORY(Plugin)
 
 # Roxy
-ADD_EXECUTABLE(Roxy Roxy.h Roxy.cpp)
+ADD_EXECUTABLE(Roxy Roxy.cpp)
 
 TARGET_LINK_LIBRARIES(Roxy PRIVATE
+    RoxyAlloc
     RoxyLog
     RoxyFmt
     RoxySTD

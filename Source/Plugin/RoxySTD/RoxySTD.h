@@ -1,6 +1,11 @@
 // ReSharper disable CppUnusedIncludeDirective
 #pragma once
 
+#include <cstdlib>
+
+#include <type_traits>
+#include <utility>
+
 #pragma region Alias
 
 #include <cstdint>
@@ -12,19 +17,20 @@ using Int32  = std::int32_t;
 using UInt32 = std::uint32_t;
 using Int64  = std::int64_t;
 using UInt64 = std::uint64_t;
+using FMaxAlign = std::max_align_t;
 
 #include <limits>
-template<typename T> using TLimits   = std::numeric_limits<T>;
+template<typename T> using TLimits = std::numeric_limits<T>;
 
 #include <memory>
-template<typename T> using TUnique   = std::unique_ptr<T>;
-template<typename T> using TShared   = std::shared_ptr<T>;
+template<typename T> using TUnique = std::unique_ptr<T>;
+template<typename T> using TShared = std::shared_ptr<T>;
 
 #include <initializer_list>
 template<typename T> using TInitList = std::initializer_list<T>;
 
 #include <vector>
-template<typename T> using TArray    = std::vector<T>;
+template<typename T> using TArray = std::vector<T>;
 
 #include <string>
 using FString     = std::string;
