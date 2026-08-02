@@ -13,6 +13,7 @@ ADD_EXECUTABLE(Roxy Roxy.cpp)
 
 TARGET_LINK_LIBRARIES(Roxy PRIVATE
     RoxyAlloc
+    RoxyChrono
     RoxyLog
     RoxyFmt
     RoxySTD

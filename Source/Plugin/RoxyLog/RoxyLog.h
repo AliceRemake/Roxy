@@ -27,6 +27,11 @@
 #endif
 
 #pragma warning(push, 0)
+//*@Temp: Suppress spdlog Deprecation Warnings.
+#ifdef FMT_DEPRECATED
+#undef FMT_DEPRECATED
+#endif
+#define FMT_DEPRECATED
 #include <spdlog/spdlog.h>
 #pragma warning(pop)
 
@@ -95,42 +100,42 @@ void SetLevel(ELogLevel LogLevel) noexcept;
 void SetPattern(FString Pattern, ELogTime LogTime = ELogTime::Local) noexcept;
 
 template <typename... T>
-ROXY_INLINE void Trace(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Trace(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::trace("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
 }
 
 template <typename... T>
-ROXY_INLINE void Debug(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Debug(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::debug("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
 }
 
 template <typename... T>
-ROXY_INLINE void Info(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Info(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::info("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
 }
 
 template <typename... T>
-ROXY_INLINE void Warn(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Warn(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::warn("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
 }
 
 template <typename... T>
-ROXY_INLINE void Error(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Error(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::error("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
 }
 
 template <typename... T>
-ROXY_INLINE void Fatal(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept
+ROXY_INLINE void Fatal(const ELogCategory LogCategory, Fmt::FormatString<T...> Fmt, T&&...Args) noexcept  // NOLINT(cppcoreguidelines-missing-std-forward)
 {
     const auto LogMsg = Fmt::Format(Fmt, std::forward<T>(Args)...);
     spdlog::critical("[{}] {}", Detail::GetEnumName(LogCategory), LogMsg);
@@ -142,34 +147,34 @@ ROXY_INLINE void Fatal(const ELogCategory LogCategory, Fmt::FormatString<T...> F
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_TRACE("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)
 
 #define ROXY_DEBUG(LogCategory, LogFmt, ...) do \
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_DEBUG("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)
 
 #define ROXY_INFO(LogCategory, LogFmt, ...) do \
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_INFO("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)
 
 #define ROXY_WARN(LogCategory, LogFmt, ...) do \
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_WARN("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)
 
 #define ROXY_ERROR(LogCategory, LogFmt, ...) do \
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_ERROR("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)
 
 #define ROXY_FATAL(LogCategory, LogFmt, ...) do \
     { \
         const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_CRITICAL("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
-    } while(0)
+    } while(false)

@@ -1,6 +1,11 @@
 #pragma once
 
 #pragma warning(push, 0)
+//*@Temp: Suppress spdlog Deprecation Warnings.
+#ifdef FMT_DEPRECATED
+#undef FMT_DEPRECATED
+#endif
+#define FMT_DEPRECATED
 #include <fmt/base.h>
 #include <fmt/format.h>
 #pragma warning(pop)
