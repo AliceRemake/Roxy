@@ -7,3 +7,6 @@
 [submodule "External/doctest"]
 	path = External/doctest
 	url = https://github.com/doctest/doctest.git
+[submodule "External/RGFW"]
+	path = External/RGFW
+	url = https://github.com/ColleagueRiley/RGFW.git

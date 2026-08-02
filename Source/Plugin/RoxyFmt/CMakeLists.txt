@@ -1,5 +1,5 @@
 SET(ThirdPartyLibraries
-    fmt
+    fmt::fmt
 )
 
 SET(PrivateDependPlugins
