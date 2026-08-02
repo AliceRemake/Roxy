@@ -17,4 +17,5 @@ TARGET_LINK_LIBRARIES(Roxy PRIVATE
     RoxyLog
     RoxyFmt
     RoxySTD
+    RGFW::RGFW
 )

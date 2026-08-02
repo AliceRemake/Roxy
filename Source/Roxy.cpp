@@ -1,5 +1,12 @@
+#define RGFW_IMPLEMENTATION
+#include <RGFW.h>
+
 #include <RoxyFmt/RoxyFmt.h>
 #include <RoxyLog/RoxyLog.h>
+#include <RoxyChrono/RoxyChrono.h>
+
+static constexpr UInt8  TargetFPS       = 60;
+static constexpr double TargetFrameTime = 1000.0 / TargetFPS;
 
 int main(const Int32 Argc, const char** Argv)
 {
@@ -11,8 +18,28 @@ int main(const Int32 Argc, const char** Argv)
     Roxy::Log::SetLevel(Roxy::Log::ELogLevel::Info);
     Roxy::Log::SetPattern(Roxy::Log::DefaultPatternWithFileLineFunc);
 
-    for (UInt64 GNrFrame = 0; true; ++GNrFrame)
+    RGFW_init();
+    RGFW_window* Window = RGFW_createWindow("Roxy", 0, 0, 800, 600, RGFW_windowCenter | RGFW_windowNoResize);
+    for (UInt64 GNrFrame = 0; RGFW_window_shouldClose(Window) == RGFW_FALSE; ++GNrFrame)
     {
+        Roxy::Chrono::FTimer FrameTimer {};
         ROXY_WARN(Roxy::Log::ELogCategory::Default, "[Frame] {}", GNrFrame);
+        RGFW_event Event;
+        while (RGFW_window_checkEvent(Window, &Event))
+        {
+            if (Event.type == RGFW_quit || Event.type == RGFW_escape)
+            {
+                RGFW_window_setShouldClose(Window, true);
+            }
+        }
+        const auto Elapsed = FrameTimer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
+        if (const auto SleepTime = TargetFrameTime - Elapsed; SleepTime > 0.0)
+        {
+            std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(SleepTime));
+        }
     }
+    RGFW_window_close(Window);
+    RGFW_deinit();
+
+    return 0;
 }
