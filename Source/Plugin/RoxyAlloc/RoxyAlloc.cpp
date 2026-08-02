@@ -30,7 +30,7 @@ void FAlignAllocator::DeAllocate(Byte* Ptr) const noexcept
 }
 
 FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
-    : Buffer   (Allocate<Byte>(FAlignAllocator{}, InCapacity, DefaultAlign))
+    : Buffer   (Roxy::Alloc::Allocate<Byte>(FAlignAllocator{}, InCapacity, DefaultAlign))
     , Current  (Buffer)
     , Capacity (AlignTo(InCapacity, DefaultAlign))
 {
@@ -38,7 +38,7 @@ FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
 
 FArenaAllocator::~FArenaAllocator()
 {
-    DeAllocate<Byte>(FAlignAllocator{}, Buffer);
+    Roxy::Alloc::DeAllocate<Byte>(FAlignAllocator{}, Buffer);
 }
 
 FArenaAllocator::FArenaAllocator(FArenaAllocator&& Oth) noexcept
@@ -52,7 +52,7 @@ FArenaAllocator::FArenaAllocator(FArenaAllocator&& Oth) noexcept
 FArenaAllocator& FArenaAllocator::operator=(FArenaAllocator&& Oth) noexcept
 {
     if (this == &Oth) { return *this; }
-    DeAllocate<Byte>(FAlignAllocator{}, Buffer);
+    Roxy::Alloc::DeAllocate<Byte>(FAlignAllocator{}, Buffer);
     Buffer   = Oth.Buffer;
     Current  = Oth.Current;
     Capacity = Oth.Capacity;
