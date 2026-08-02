@@ -44,6 +44,7 @@ template<typename T, EMTModel MTModel> requires
 )
 class TQueue<T, MTModel, EMTImpl::LockFree>
 {
+    //@TODO
 };
 
 }
