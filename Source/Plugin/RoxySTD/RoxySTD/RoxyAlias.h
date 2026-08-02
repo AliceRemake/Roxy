@@ -15,6 +15,9 @@
 
 #include <cstdint>
 #include <cstddef>
+#ifdef Byte // Undef Mac Byte Shit
+#undef Byte
+#endif
 using Int8      = std::int8_t;
 using UInt8     = std::uint8_t;
 using Int16     = std::int16_t;
