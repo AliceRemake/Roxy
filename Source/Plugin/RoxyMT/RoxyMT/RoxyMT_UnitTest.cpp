@@ -9,9 +9,9 @@
 using namespace Roxy;
 
 template<typename T>
-using MutexQueue = TQueue<T, EThreadSafety::Safe, EThreadSafetyImpl::MutexLock>;
+using MutexQueue = TQueue<T, EMTModel::MPMC, EMTImpl::MutexLock>;
 template<typename T>
-using SpinQueue  = TQueue<T, EThreadSafety::Safe, EThreadSafetyImpl::SpinLock>;
+using SpinQueue  = TQueue<T, EMTModel::MPMC, EMTImpl::SpinLock>;
 
 template<typename QueueType>
 void RunProducerConsumerTest(const int NumProducers, const int ItemsPerProducer)
@@ -25,7 +25,7 @@ void RunProducerConsumerTest(const int NumProducers, const int ItemsPerProducer)
             for (int i = 0; i < ItemsPerProducer; ++i)
             {
                 int Value = Offset * ItemsPerProducer + i;
-                Queue.Enqueue(Value);
+                Queue.EnQueue(Value);
             }
         }, p);
     }
@@ -33,8 +33,11 @@ void RunProducerConsumerTest(const int NumProducers, const int ItemsPerProducer)
     for (auto& Thread : Producers) Thread.join();
 
     std::vector<int> Consumed;
-    while (!Queue.IsEmpy())
-        Consumed.push_back(Queue.Dequeue());
+    int Value;
+    while (Queue.DeQueue(Value))
+    {
+        Consumed.push_back(Value);
+    }
 
     REQUIRE(Consumed.size() == static_cast<size_t>(NumProducers * ItemsPerProducer));
     std::sort(Consumed.begin(), Consumed.end());
@@ -70,19 +73,17 @@ TEST_CASE("Benchmark: MutexLock vs SpinLock queue throughput")
         {
             Threads.emplace_back([&](int Start) {
                 for (int i = 0; i < ItemsPerThread; ++i)
-                    Queue.Enqueue(Start + i);
+                    Queue.EnQueue(Start + i);
             }, t * ItemsPerThread);
         }
         for (auto& Thread : Threads) Thread.join();
 
         int Remaining = TotalItems;
+        int Dummy;
         while (Remaining > 0)
         {
-            if (!Queue.IsEmpy())
-            {
-                Queue.Dequeue();
+            if (Queue.DeQueue(Dummy))
                 --Remaining;
-            }
             else
                 std::this_thread::yield();
         }

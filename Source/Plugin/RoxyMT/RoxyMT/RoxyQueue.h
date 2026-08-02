@@ -5,8 +5,13 @@
 namespace Roxy
 {
 
-template<typename T, EThreadSafetyImpl ThreadSafetyImpl>
-class TQueue<T, EThreadSafety::Safe, ThreadSafetyImpl>
+template<typename T, EMTModel MTModel, EMTImpl MTImpl> requires
+(
+    MTModel != EMTModel::SPSC
+    && (MTImpl == EMTImpl::MutexLock
+    || MTImpl == EMTImpl::SpinLock)
+)
+class TQueue<T, MTModel, MTImpl>
 {
 public:
     TQueue() = default;
@@ -14,62 +19,31 @@ public:
 
     ROXY_NO_COPY_MOVE(TQueue)
 
-    void Enqueue(T Element)
+    ROXY_INLINE void EnQueue(T Element) noexcept
     {
         MT::FLockGuard LockGuard(Lock);
-        Queue.emplace(std::move(Element));
+        Queue.EnQueue(Element);
     }
 
-    T Dequeue()
+    ROXY_INLINE bool DeQueue(T& OutElement) noexcept
     {
         MT::FLockGuard LockGuard(Lock);
-        ROXY_ASSERT(!Queue.empty());
-        T Element = Queue.front();
-        Queue.pop();
-        return Element;
-    }
-
-    ROXY_NODISCARD ROXY_INLINE bool IsEmpy() const noexcept
-    {
-        MT::FLockGuard LockGuard(Lock);
-        return Queue.empty();
-    }
-
-    ROXY_NODISCARD ROXY_INLINE FIndex Num() const noexcept
-    {
-        MT::FLockGuard LockGuard(Lock);
-        return static_cast<FIndex>(Queue.size());
-    }
-
-    ROXY_NODISCARD ROXY_INLINE T PeekFirst() const noexcept
-    {
-        ROXY_ASSERT(!IsEmpy());
-        return Queue.front();
-    }
-
-    ROXY_NODISCARD ROXY_INLINE T PeekLast() const noexcept
-    {
-        ROXY_ASSERT(!IsEmpy());
-        return Queue.back();
+        return Queue.DeQueue(OutElement);
     }
 
 private:
-
-    using FLock = std::conditional_t
-    <
-        ThreadSafetyImpl == EThreadSafetyImpl::MutexLock, MT::FMutexLock, std::conditional_t<
-        ThreadSafetyImpl == EThreadSafetyImpl::SpinLock,  MT::FSpinLock,
-        MT::FMutexLock
-    >>;
+    using FLock = std::conditional_t<MTImpl == EMTImpl::MutexLock, MT::FMutexLock, MT::FSpinLock>;
 
     mutable FLock Lock  {};
-    std::queue<T> Queue {};
+    TQueue<T>     Queue {};
 };
 
-template<typename T>
-class TQueue<T, EThreadSafety::Safe, EThreadSafetyImpl::LockFree>
+template<typename T, EMTModel MTModel> requires
+(
+    MTModel != EMTModel::SPSC
+)
+class TQueue<T, MTModel, EMTImpl::LockFree>
 {
-    // @TODO
 };
 
 }

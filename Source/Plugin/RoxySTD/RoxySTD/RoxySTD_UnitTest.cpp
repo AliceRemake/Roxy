@@ -8,10 +8,10 @@ using namespace Roxy;
 
 TEST_CASE("Roxy::TQueue (UnSafe) – full interface")
 {
-    SUBCASE("IsEmpy on new queue returns true")
+    SUBCASE("IsEmpty on new queue returns true")
     {
         TQueue<int> Queue;
-        CHECK(Queue.IsEmpy() == true);
+        CHECK(Queue.IsEmpty() == true);
     }
 
     SUBCASE("Num on new queue returns 0")
@@ -20,35 +20,42 @@ TEST_CASE("Roxy::TQueue (UnSafe) – full interface")
         CHECK(Queue.Num() == 0);
     }
 
-    SUBCASE("EnQueue increases Num and IsEmpy becomes false")
+    SUBCASE("EnQueue increases Num and IsEmpty becomes false")
     {
         TQueue<int> Queue;
         Queue.EnQueue(42);
-        CHECK(Queue.IsEmpy() == false);
+        CHECK(Queue.IsEmpty() == false);
         CHECK(Queue.Num() == 1);
     }
 
-    SUBCASE("DeQueue returns the element and reduces Num")
+    SUBCASE("DeQueue returns true and retrieves the element, then Num decreases")
     {
         TQueue<int> Queue;
         Queue.EnQueue(10);
-        int val = Queue.DeQueue();
+        int val = 0;
+        bool success = Queue.DeQueue(val);
+        CHECK(success == true);
         CHECK(val == 10);
-        CHECK(Queue.IsEmpy() == true);
+        CHECK(Queue.IsEmpty() == true);
         CHECK(Queue.Num() == 0);
     }
 
-    SUBCASE("FIFO order is preserved")
+    SUBCASE("FIFO order is preserved with DeQueue")
     {
         TQueue<int> Queue;
         Queue.EnQueue(1);
         Queue.EnQueue(2);
         Queue.EnQueue(3);
         CHECK(Queue.Num() == 3);
-        CHECK(Queue.DeQueue() == 1);
-        CHECK(Queue.DeQueue() == 2);
-        CHECK(Queue.DeQueue() == 3);
-        CHECK(Queue.IsEmpy());
+
+        int val;
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 1);
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 2);
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 3);
+        CHECK(Queue.IsEmpty());
     }
 
     SUBCASE("First and Last (non‑const)")
@@ -84,7 +91,9 @@ TEST_CASE("Roxy::TQueue (UnSafe) – full interface")
         std::string s = "movable";
         Queue.EnQueue(std::move(s));
         CHECK(s.empty());
-        std::string out = Queue.DeQueue();
+
+        std::string out;
+        REQUIRE(Queue.DeQueue(out));
         CHECK(out == "movable");
     }
 
@@ -94,7 +103,9 @@ TEST_CASE("Roxy::TQueue (UnSafe) – full interface")
         std::string s = "copy me";
         Queue.EnQueue(s);
         CHECK(!s.empty());
-        std::string out = Queue.DeQueue();
+
+        std::string out;
+        REQUIRE(Queue.DeQueue(out));
         CHECK(out == "copy me");
         CHECK(s == "copy me");
     }
@@ -105,25 +116,42 @@ TEST_CASE("Roxy::TQueue (UnSafe) – full interface")
         Queue.EnQueue(10);
         Queue.EnQueue(20);
         CHECK(Queue.Num() == 2);
-        CHECK(Queue.DeQueue() == 10);
+
+        int val;
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 10);
+
         Queue.EnQueue(30);
         CHECK(Queue.First() == 20);
         CHECK(Queue.Last() == 30);
         CHECK(Queue.Num() == 2);
-        CHECK(Queue.DeQueue() == 20);
-        CHECK(Queue.DeQueue() == 30);
-        CHECK(Queue.IsEmpy());
+
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 20);
+        REQUIRE(Queue.DeQueue(val));
+        CHECK(val == 30);
+        CHECK(Queue.IsEmpty());
     }
 
-    SUBCASE("Safe usage pattern: check IsEmpy before DeQueue/First/Last")
+    SUBCASE("Safe usage pattern: check IsEmpty before DeQueue/First/Last")
     {
         TQueue<int> Queue;
-        if (!Queue.IsEmpy())
+        if (!Queue.IsEmpty())
         {
-            Queue.DeQueue();
+            int dummy;
+            Queue.DeQueue(dummy);
             (void)Queue.First();
             (void)Queue.Last();
         }
-        CHECK(Queue.IsEmpy());
+        CHECK(Queue.IsEmpty());
+    }
+
+    SUBCASE("DeQueue on empty queue returns false")
+    {
+        TQueue<int> Queue;
+        int val = 0;
+        bool success = Queue.DeQueue(val);
+        CHECK(success == false);
+        CHECK(val == 0);
     }
 }

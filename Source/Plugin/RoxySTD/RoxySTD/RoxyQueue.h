@@ -7,11 +7,11 @@
 namespace Roxy
 {
 
-template<typename T, EThreadSafety ThreadSafety = EThreadSafety::UnSafe, EThreadSafetyImpl ThreadSafetyImpl = EThreadSafetyImpl::LockFree>
+template<typename T, EMTModel MTModel = EMTModel::SPSC, EMTImpl MTImpl = EMTImpl::None>
 class TQueue;
 
-template<typename T, EThreadSafetyImpl ThreadSafetyImpl>
-class TQueue<T, EThreadSafety::UnSafe, ThreadSafetyImpl>
+template<typename T>
+class TQueue<T, EMTModel::SPSC, EMTImpl::None>
 {
 public:
     TQueue() = default;
@@ -24,15 +24,15 @@ public:
         Queue.emplace(std::move(Element));
     }
 
-    ROXY_INLINE T DeQueue() noexcept
+    ROXY_INLINE bool DeQueue(T& OutElement) noexcept
     {
-        ROXY_ASSERT(!Queue.empty());
-        T Element = Queue.front();
+        if (IsEmpty()) { return false; }
+        OutElement = std::move(Queue.front());
         Queue.pop();
-        return Element;
+        return true;
     }
 
-    ROXY_NODISCARD ROXY_INLINE bool IsEmpy() const noexcept
+    ROXY_NODISCARD ROXY_INLINE bool IsEmpty() const noexcept
     {
         return Queue.empty();
     }
@@ -44,25 +44,25 @@ public:
 
     ROXY_NODISCARD ROXY_INLINE T& First() noexcept
     {
-        ROXY_ASSERT(!IsEmpy());
+        ROXY_ASSERT(!IsEmpty());
         return Queue.front();
     }
 
     ROXY_NODISCARD ROXY_INLINE const T& First() const noexcept
     {
-        ROXY_ASSERT(!IsEmpy());
+        ROXY_ASSERT(!IsEmpty());
         return Queue.front();
     }
 
     ROXY_NODISCARD ROXY_INLINE T& Last() noexcept
     {
-        ROXY_ASSERT(!IsEmpy());
+        ROXY_ASSERT(!IsEmpty());
         return Queue.back();
     }
 
     ROXY_NODISCARD ROXY_INLINE const T& Last() const noexcept
     {
-        ROXY_ASSERT(!IsEmpy());
+        ROXY_ASSERT(!IsEmpty());
         return Queue.back();
     }
 

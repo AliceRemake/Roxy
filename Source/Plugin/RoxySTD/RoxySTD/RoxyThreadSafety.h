@@ -5,14 +5,23 @@
 namespace Roxy
 {
 
-enum class EThreadSafety : UInt8
+enum class EMTModelFlags : UInt8
 {
-    UnSafe,
-    Safe,
+    MC = 1 << 0,
+    MP = 1 << 1,
 };
 
-enum class EThreadSafetyImpl : UInt8
+enum class EMTModel : UInt8
 {
+    SPSC, /* Single Producer Single Consumer */
+    SPMC, /* Single Producer Multi  Consumer */
+    MPSC, /* Multi  Producer Single Consumer */
+    MPMC, /* Multi  Producer Multi  Consumer */
+};
+
+enum class EMTImpl : UInt8
+{
+    None,
     MutexLock,
     SpinLock,
     LockFree,
