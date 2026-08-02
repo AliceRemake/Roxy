@@ -178,7 +178,7 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
         CHECK(Ptr3 > Ptr2);
     }
 
-    SUBCASE("Multiple allocations pattern")
+    SUBCASE("Multiple Allocate")
     {
         FArenaAllocator Arena(Capacity);
         constexpr auto N { 256 };
