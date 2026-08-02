@@ -138,38 +138,38 @@ ROXY_INLINE void Fatal(const ELogCategory LogCategory, Fmt::FormatString<T...> F
 
 }
 
-#define ROXY_TRACE(LogCategory, Fmt_, ...) do \
+#define ROXY_TRACE(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_TRACE("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)
 
-#define ROXY_DEBUG(LogCategory, Fmt_, ...) do \
+#define ROXY_DEBUG(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_DEBUG("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)
 
-#define ROXY_INFO(LogCategory, Fmt_, ...) do \
+#define ROXY_INFO(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_INFO("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)
 
-#define ROXY_WARN(LogCategory, Fmt_, ...) do \
+#define ROXY_WARN(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_WARN("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)
 
-#define ROXY_ERROR(LogCategory, Fmt_, ...) do \
+#define ROXY_ERROR(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_ERROR("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)
 
-#define ROXY_FATAL(LogCategory, Fmt_, ...) do \
+#define ROXY_FATAL(LogCategory, LogFmt, ...) do \
     { \
-        const auto LogMsg = Roxy::Fmt::Format(Fmt_, __VA_ARGS__); \
+        const auto LogMsg = Roxy::Fmt::Format(LogFmt, __VA_ARGS__); \
         SPDLOG_CRITICAL("[{}] {}", Roxy::Log::Detail::GetEnumName(LogCategory), LogMsg); \
     } while(0)

@@ -3,20 +3,24 @@
 
 #include <cstdlib>
 
+#include <bit>
 #include <type_traits>
 #include <utility>
 
 #pragma region Alias
 
 #include <cstdint>
-using Int8   = std::int8_t;
-using UInt8  = std::uint8_t;
-using Int16  = std::int16_t;
-using UInt16 = std::uint16_t;
-using Int32  = std::int32_t;
-using UInt32 = std::uint32_t;
-using Int64  = std::int64_t;
-using UInt64 = std::uint64_t;
+#include <cstddef>
+using Int8      = std::int8_t;
+using UInt8     = std::uint8_t;
+using Int16     = std::int16_t;
+using UInt16    = std::uint16_t;
+using Int32     = std::int32_t;
+using UInt32    = std::uint32_t;
+using Int64     = std::int64_t;
+using UInt64    = std::uint64_t;
+using Byte      = std::byte;
+using UIntPtr   = std::uintptr_t;
 using FMaxAlign = std::max_align_t;
 
 #include <limits>
@@ -46,11 +50,22 @@ template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, T
 
 #pragma region Macro
 
-#if ROXY_ENABLE_ASSERT
-#include <cassert>
-#define ROXY_ASSERT(Expr) do { assert(Expr); } while(0)
+#if ROXY_IS_MSVC
+#define ROXY_DEBUG_BREAK() do { __debugbreak(); } while(false)
 #else
-#define ROXY_ASSERT(Expr)
+#define ROXY_DEBUG_BREAK() do { __builtin_trap(); } while(false)
+#endif
+
+#if ROXY_ENABLE_ASSERT
+#ifdef NDEBUG
+#include <cassert>
+#define ROXY_ASSERT(Expr) do { if (!(Expr)) { ROXY_DEBUG_BREAK(); std::abort(); } } while(false)
+#else
+#include <cassert>
+#define ROXY_ASSERT(Expr) do { if (!(Expr)) { assert(Expr); } } while(false)
+#endif
+#else
+#define ROXY_ASSERT(Expr) do { if (!(Expr)) { std::abort(); } } while(false)
 #endif
 
 #if ROXY_ENABLE_NODISCARD
@@ -64,6 +79,8 @@ template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, T
 #else
 #define ROXY_INLINE
 #endif
+
+#define ROXY_UNUSED [[maybe_unused]]
 
 #pragma endregion
 

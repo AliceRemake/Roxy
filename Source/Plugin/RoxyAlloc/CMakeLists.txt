@@ -2,6 +2,7 @@ SET(ThirdPartyLibraries
 )
 
 SET(PrivateDependPlugins
+    RoxyLog
 )
 
 SET(PublicDependPlugins
