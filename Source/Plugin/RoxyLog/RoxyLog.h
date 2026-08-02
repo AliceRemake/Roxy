@@ -26,16 +26,17 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_CRITICAL
 #endif
 
-#pragma warning(push, 0)
+#include <RoxySTD.h>
+
+ROXY_DISABLE_WARNINGS()
 //*@Temp: Suppress spdlog Deprecation Warnings.
 #ifdef FMT_DEPRECATED
 #undef FMT_DEPRECATED
 #endif
 #define FMT_DEPRECATED
 #include <spdlog/spdlog.h>
-#pragma warning(pop)
+ROXY_RESTORE_WARNINGS()
 
-#include <RoxySTD.h>
 #include <RoxyFmt.h>
 
 namespace Roxy::Log

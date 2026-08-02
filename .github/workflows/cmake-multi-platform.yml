@@ -51,6 +51,12 @@ jobs:
       if: runner.os == 'Linux'
       run: sudo apt-get update && sudo apt-get install -y ninja-build
 
+    - name: Setup MSVC environment (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+
     - name: Get CMake 4.1.1
       uses: lukka/get-cmake@latest
       with:

@@ -76,9 +76,21 @@ template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, T
 #endif
 
 #if ROXY_ENABLE_INLINE
+#if ROXY_IS_MSVC
 #define ROXY_INLINE __forceinline
 #else
+#define ROXY_INLINE __attribute__((always_inline)) inline
+#endif
+#else
 #define ROXY_INLINE
+#endif
+
+#if ROXY_IS_MSVC
+#define ROXY_DISABLE_WARNINGS() __pragma(warning(push, 0))
+#define ROXY_RESTORE_WARNINGS() __pragma(warning(pop))
+#else
+#define ROXY_DISABLE_WARNINGS() _Pragma("GCC diagnostic push")
+#define ROXY_RESTORE_WARNINGS() _Pragma("GCC diagnostic pop")
 #endif
 
 #define ROXY_UNUSED [[maybe_unused]]

@@ -1,6 +1,8 @@
 #pragma once
 
-#pragma warning(push, 0)
+#include <RoxySTD.h>
+
+ROXY_DISABLE_WARNINGS()
 //*@Temp: Suppress spdlog Deprecation Warnings.
 #ifdef FMT_DEPRECATED
 #undef FMT_DEPRECATED
@@ -8,9 +10,7 @@
 #define FMT_DEPRECATED
 #include <fmt/base.h>
 #include <fmt/format.h>
-#pragma warning(pop)
-
-#include <RoxySTD.h>
+ROXY_RESTORE_WARNINGS()
 
 namespace Roxy::Fmt
 {
