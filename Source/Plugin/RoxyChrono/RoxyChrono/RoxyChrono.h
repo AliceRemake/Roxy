@@ -5,7 +5,7 @@
 namespace Roxy::Chrono
 {
 
-enum class ETimeUnit : UInt8
+enum class ETimeUnit : U8
 {
     NaS,
     MuS,

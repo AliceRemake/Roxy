@@ -7,19 +7,19 @@
 namespace Roxy::Alloc
 {
 
-Byte* FAlignAllocator::Allocate(const UIntPtr Bytes, const UIntPtr Align) const noexcept
+FByte* FAlignAllocator::Allocate(const UIntPtr Bytes, const UIntPtr Align) const noexcept
 {
     ROXY_ASSERT(!!Bytes && "Can Not Allocate 0 Bytes Of Memory");
 #if ROXY_IS_MSVC
-    auto* Allocated = static_cast<Byte*>(_aligned_malloc(AlignTo(Bytes, Align), Align));
+    auto* Allocated = static_cast<FByte*>(_aligned_malloc(AlignTo(Bytes, Align), Align));
 #else
-    auto* Allocated = static_cast<Byte*>(std::aligned_alloc(Align, AlignTo(Bytes, Align)));
+    auto* Allocated = static_cast<FByte*>(std::aligned_alloc(Align, AlignTo(Bytes, Align)));
 #endif
     ROXY_ASSERT(Allocated);
     return Allocated;
 }
 
-void FAlignAllocator::DeAllocate(Byte* Ptr) const noexcept
+void FAlignAllocator::DeAllocate(FByte* Ptr) const noexcept
 {
     if (!Ptr) { return; }
 #if ROXY_IS_MSVC
@@ -30,7 +30,7 @@ void FAlignAllocator::DeAllocate(Byte* Ptr) const noexcept
 }
 
 FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
-    : Buffer   (Roxy::Alloc::Allocate<Byte>(FAlignAllocator{}, InCapacity, DefaultAlign))
+    : Buffer   (Roxy::Alloc::Allocate<FByte>(FAlignAllocator{}, InCapacity, DefaultAlign))
     , Current  (Buffer)
     , Capacity (AlignTo(InCapacity, DefaultAlign))
 {
@@ -38,7 +38,7 @@ FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
 
 FArenaAllocator::~FArenaAllocator()
 {
-    Roxy::Alloc::DeAllocate<Byte>(FAlignAllocator{}, Buffer);
+    Roxy::Alloc::DeAllocate<FByte>(FAlignAllocator{}, Buffer);
 }
 
 FArenaAllocator::FArenaAllocator(FArenaAllocator&& Oth) noexcept
@@ -52,7 +52,7 @@ FArenaAllocator::FArenaAllocator(FArenaAllocator&& Oth) noexcept
 FArenaAllocator& FArenaAllocator::operator=(FArenaAllocator&& Oth) noexcept
 {
     if (this == &Oth) { return *this; }
-    Roxy::Alloc::DeAllocate<Byte>(FAlignAllocator{}, Buffer);
+    Roxy::Alloc::DeAllocate<FByte>(FAlignAllocator{}, Buffer);
     Buffer   = Oth.Buffer;
     Current  = Oth.Current;
     Capacity = Oth.Capacity;
@@ -60,7 +60,7 @@ FArenaAllocator& FArenaAllocator::operator=(FArenaAllocator&& Oth) noexcept
     return *this;
 }
 
-Byte* FArenaAllocator::Allocate(UIntPtr Bytes, UIntPtr Align) noexcept
+FByte* FArenaAllocator::Allocate(UIntPtr Bytes, UIntPtr Align) noexcept
 {
     const auto Aligned = AlignTo(Current, Align);
     if (Aligned + Bytes > Buffer + Capacity)
@@ -86,7 +86,7 @@ Byte* FArenaAllocator::Allocate(UIntPtr Bytes, UIntPtr Align) noexcept
     return Aligned;
 }
 
-void FArenaAllocator::DeAllocate(Byte* Ptr ROXY_UNUSED) noexcept
+void FArenaAllocator::DeAllocate(FByte* Ptr ROXY_UNUSED) noexcept
 {
     ROXY_WARN(Roxy::Log::ELogCategory::Alloc, "{}", "Can Not Call DeAllocate On FArenaAllocator. Use `Rewind` Instead.");
 }
@@ -96,7 +96,7 @@ void FArenaAllocator::Rewind() noexcept
     Current = Buffer;
 }
 
-void FArenaAllocator::Rewind(Byte* RewindPtr) noexcept
+void FArenaAllocator::Rewind(FByte* RewindPtr) noexcept
 {
     ROXY_ASSERT(Buffer <= RewindPtr && RewindPtr <= Current);
     Current = RewindPtr;

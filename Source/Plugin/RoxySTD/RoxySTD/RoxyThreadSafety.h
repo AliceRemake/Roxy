@@ -5,13 +5,13 @@
 namespace Roxy
 {
 
-enum class EMTModelFlags : UInt8
+enum class EMTModelFlags : U8
 {
     MC = 1 << 0,
     MP = 1 << 1,
 };
 
-enum class EMTModel : UInt8
+enum class EMTModel : U8
 {
     SPSC, /* Single Producer Single Consumer */
     SPMC, /* Single Producer Multi  Consumer */
@@ -19,7 +19,7 @@ enum class EMTModel : UInt8
     MPMC, /* Multi  Producer Multi  Consumer */
 };
 
-enum class EMTImpl : UInt8
+enum class EMTImpl : U8
 {
     None,
     MutexLock,

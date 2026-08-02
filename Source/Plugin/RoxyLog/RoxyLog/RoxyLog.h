@@ -45,13 +45,13 @@ namespace Roxy::Log
 constexpr auto DefaultPattern                 = "[%Y-%m-%d][%H:%M:%S][%^%L%$]%v";
 constexpr auto DefaultPatternWithFileLineFunc = "[%Y-%m-%d][%H:%M:%S][%^%L%$][%@][%!]%v";
 
-enum class ELogCategory : UInt8
+enum class ELogCategory : U8
 {
     Default,
     Alloc,
 };
 
-enum class ELogLevel : UInt8
+enum class ELogLevel : U8
 {
     Trace,
     Debug,
@@ -62,7 +62,7 @@ enum class ELogLevel : UInt8
     Off,
 };
 
-enum class ELogTime : UInt8
+enum class ELogTime : U8
 {
     Local,
     UTC,

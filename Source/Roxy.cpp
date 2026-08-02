@@ -9,10 +9,10 @@ ROXY_RESTORE_WARNINGS()
 #include <RoxyLog/RoxyLog.h>
 #include <RoxyChrono/RoxyChrono.h>
 
-static constexpr UInt8  TargetFPS       = 60;
+static constexpr U8  TargetFPS       = 60;
 static constexpr double TargetFrameTime = 1000.0 / TargetFPS;
 
-int main(const Int32 Argc, const char** Argv)
+int main(const I32 Argc, const char** Argv)
 {
     (void)Argc;
     (void)Argv;
@@ -24,7 +24,7 @@ int main(const Int32 Argc, const char** Argv)
 
     RGFW_init();
     RGFW_window* Window = RGFW_createWindow("Roxy", 0, 0, 800, 600, RGFW_windowCenter | RGFW_windowNoResize);
-    for (UInt64 GNrFrame = 0; RGFW_window_shouldClose(Window) == RGFW_FALSE; ++GNrFrame)
+    for (U64 GNrFrame = 0; RGFW_window_shouldClose(Window) == RGFW_FALSE; ++GNrFrame)
     {
         Roxy::Chrono::FTimer FrameTimer {};
         ROXY_WARN(Roxy::Log::ELogCategory::Default, "[Frame] {}", GNrFrame);

@@ -14,7 +14,7 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
 
     SUBCASE("Allocate/DeAllocate")
     {
-        Byte* Ptr = Allocator.Allocate(64);
+        FByte* Ptr = Allocator.Allocate(64);
         CHECK(Ptr != nullptr);
         Allocator.DeAllocate(Ptr);
     }
@@ -23,7 +23,7 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
     {
         for (const auto Align : {8, 16, 32, 64, 128})
         {
-            Byte* Ptr = Allocator.Allocate(Align * 2, Align);
+            FByte* Ptr = Allocator.Allocate(Align * 2, Align);
             CHECK((Ptr != nullptr && reinterpret_cast<uintptr_t>(Ptr) % Align == 0));
             Allocator.DeAllocate(Ptr);
         }
@@ -31,7 +31,7 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
 
     SUBCASE("Alignment(sizeof(FMaxAlign))")
     {
-        Byte* Ptr = Allocator.Allocate(128);
+        FByte* Ptr = Allocator.Allocate(128);
         CHECK((Ptr != nullptr && reinterpret_cast<uintptr_t>(Ptr) % alignof(std::max_align_t) == 0));
         Allocator.DeAllocate(Ptr);
     }
@@ -39,10 +39,10 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
     SUBCASE("Multi Allocate/DeAllocate")
     {
         constexpr auto N { 128 };
-        TArray<Byte*> Ptrs {}; Ptrs.reserve(N);
+        TArray<FByte*> Ptrs {}; Ptrs.reserve(N);
         for (int Idx = 0; Idx < N; ++Idx)
         {
-            Byte* Ptr = Allocator.Allocate((Idx + 1) * 8);
+            FByte* Ptr = Allocator.Allocate((Idx + 1) * 8);
             CHECK(Ptr != nullptr);
             Ptrs.push_back(Ptr);
         }
@@ -55,7 +55,7 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
     SUBCASE("Big Allocate/DeAllocate")
     {
         constexpr auto BigBytes { 1024 * 1024 };
-        Byte* Ptr = Allocator.Allocate(BigBytes);
+        FByte* Ptr = Allocator.Allocate(BigBytes);
         CHECK(Ptr != nullptr);
         Allocator.DeAllocate(Ptr);
     }
@@ -63,11 +63,11 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
     SUBCASE("Different Bytes/Align")
     {
         {
-            Byte* Ptr = Allocator.Allocate(1, 16);
+            FByte* Ptr = Allocator.Allocate(1, 16);
             CHECK((Ptr != nullptr && reinterpret_cast<uintptr_t>(Ptr) % 16 == 0));
             Allocator.DeAllocate(Ptr);
         } {
-            Byte* Ptr = Allocator.Allocate(64, 32);
+            FByte* Ptr = Allocator.Allocate(64, 32);
             CHECK((Ptr != nullptr && reinterpret_cast<uintptr_t>(Ptr) % 32 == 0));
             Allocator.DeAllocate(Ptr);
         }
@@ -83,14 +83,14 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
     SUBCASE("Allocate/Rewind")
     {
         FArenaAllocator Arena(Capacity);
-        Byte* Ptr1 = Arena.Allocate(64);
+        FByte* Ptr1 = Arena.Allocate(64);
         REQUIRE(Ptr1 != nullptr);
-        Byte* Ptr2 = Arena.Allocate(128);
+        FByte* Ptr2 = Arena.Allocate(128);
         REQUIRE(Ptr2 != nullptr);
         CHECK(Ptr1 != Ptr2);
 
         Arena.Rewind();
-        Byte* Ptr3 = Arena.Allocate(64);
+        FByte* Ptr3 = Arena.Allocate(64);
         REQUIRE(Ptr3 != nullptr);
         CHECK(Ptr3 == Ptr1);
     }
@@ -100,14 +100,14 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
         constexpr auto SmallCapacity = 1024;
         FArenaAllocator Arena(SmallCapacity);
 
-        Byte* Ptr1 = Arena.Allocate(1000);
+        FByte* Ptr1 = Arena.Allocate(1000);
         REQUIRE(Ptr1 != nullptr);
 
-        Byte* Ptr2 = Arena.Allocate(100);
+        FByte* Ptr2 = Arena.Allocate(100);
         CHECK(Ptr2 == nullptr);
 
         Arena.Rewind();
-        Byte* Ptr3 = Arena.Allocate(1000);
+        FByte* Ptr3 = Arena.Allocate(1000);
         REQUIRE(Ptr3 != nullptr);
     }
 
@@ -117,12 +117,12 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
 
         for (const auto Align : {8, 16, 32, 64, 128})
         {
-            Byte* Ptr = Arena.Allocate(Align * 2, Align);
+            FByte* Ptr = Arena.Allocate(Align * 2, Align);
             REQUIRE(Ptr != nullptr);
             CHECK(reinterpret_cast<uintptr_t>(Ptr) % Align == 0);
         }
 
-        Byte* Ptr = Arena.Allocate(128);
+        FByte* Ptr = Arena.Allocate(128);
         REQUIRE(Ptr != nullptr);
         CHECK(reinterpret_cast<uintptr_t>(Ptr) % alignof(std::max_align_t) == 0);
     }
@@ -132,19 +132,19 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
         constexpr auto ArenaSize = 2048;
         FArenaAllocator Arena(ArenaSize);
 
-        Byte* Ptr1 = Arena.Allocate(200);
+        FByte* Ptr1 = Arena.Allocate(200);
         REQUIRE(Ptr1 != nullptr);
-        Byte* Ptr2 = Arena.Allocate(300);
+        FByte* Ptr2 = Arena.Allocate(300);
         REQUIRE(Ptr2 != nullptr);
-        Byte* Ptr3 = Arena.Allocate(400);
+        FByte* Ptr3 = Arena.Allocate(400);
         REQUIRE(Ptr3 != nullptr);
 
         Arena.Rewind(Ptr2);
-        Byte* Ptr4 = Arena.Allocate(300);
+        FByte* Ptr4 = Arena.Allocate(300);
         REQUIRE(Ptr4 != nullptr);
         CHECK(Ptr4 == Ptr2);
 
-        Byte* Ptr5 = Arena.Allocate(400);
+        FByte* Ptr5 = Arena.Allocate(400);
         REQUIRE(Ptr5 != nullptr);
         CHECK(Ptr5 == Ptr3);
     }
@@ -152,13 +152,13 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
     SUBCASE("DeAllocate(no-op)")
     {
         FArenaAllocator Arena(1024);
-        Byte* Ptr1 = Arena.Allocate(100);
+        FByte* Ptr1 = Arena.Allocate(100);
         REQUIRE(Ptr1 != nullptr);
-        Byte* Ptr2 = Arena.Allocate(100);
+        FByte* Ptr2 = Arena.Allocate(100);
         REQUIRE(Ptr2 != nullptr);
 
         Arena.DeAllocate(Ptr1);
-        Byte* Ptr3 = Arena.Allocate(100);
+        FByte* Ptr3 = Arena.Allocate(100);
         REQUIRE(Ptr3 != nullptr);
         CHECK(Ptr3 > Ptr2);
 
@@ -168,17 +168,17 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
     SUBCASE("Move")
     {
         FArenaAllocator Arena1(1024);
-        Byte* Ptr1 = Arena1.Allocate(100);
+        FByte* Ptr1 = Arena1.Allocate(100);
         REQUIRE(Ptr1 != nullptr);
 
         FArenaAllocator Arena2(std::move(Arena1));
-        Byte* Ptr2 = Arena2.Allocate(200);
+        FByte* Ptr2 = Arena2.Allocate(200);
         REQUIRE(Ptr2 != nullptr);
         CHECK(Ptr2 > Ptr1);
 
         FArenaAllocator Arena3(512);
         Arena3 = std::move(Arena2);
-        Byte* Ptr3 = Arena3.Allocate(300);
+        FByte* Ptr3 = Arena3.Allocate(300);
         REQUIRE(Ptr3 != nullptr);
         CHECK(Ptr3 > Ptr2);
     }
@@ -187,13 +187,13 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
     {
         FArenaAllocator Arena(Capacity);
         constexpr auto N { 256 };
-        TArray<Byte*> Ptrs {};
+        TArray<FByte*> Ptrs {};
         Ptrs.reserve(N);
 
         for (int Idx = 0; Idx < N; ++Idx)
         {
             UIntPtr Size = (Idx + 1) * 16;
-            Byte* Ptr = Arena.Allocate(Size);
+            FByte* Ptr = Arena.Allocate(Size);
             REQUIRE(Ptr != nullptr);
             Ptrs.push_back(Ptr);
         }
@@ -204,7 +204,7 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
         }
 
         Arena.Rewind();
-        Byte* NewPtr = Arena.Allocate(64);
+        FByte* NewPtr = Arena.Allocate(64);
         REQUIRE(NewPtr != nullptr);
         CHECK(NewPtr == Ptrs[0]);
     }
@@ -237,7 +237,7 @@ TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
             Roxy::Chrono::FTimer Timer;
             for (int i = 0; i < NumAllocs; ++i)
             {
-                Byte* p = AlignAlloc.Allocate(AllocSize);
+                FByte* p = AlignAlloc.Allocate(AllocSize);
                 AlignAlloc.DeAllocate(p);
             }
             const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
@@ -255,7 +255,7 @@ TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
             Roxy::Chrono::FTimer Timer;
             for (int i = 0; i < NumAllocs; ++i)
             {
-                Byte* p = ArenaAlloc.Allocate(AllocSize);
+                FByte* p = ArenaAlloc.Allocate(AllocSize);
                 REQUIRE(p != nullptr);
             }
             const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
@@ -274,7 +274,7 @@ TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
             Roxy::Chrono::FTimer Timer;
             for (int i = 0; i < NumAllocs; ++i)
             {
-                Byte* p = ArenaAlloc.Allocate(AllocSize);
+                FByte* p = ArenaAlloc.Allocate(AllocSize);
                 REQUIRE(p != nullptr);
             }
             ArenaAlloc.Rewind();
@@ -289,7 +289,7 @@ TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
         constexpr UIntPtr LargeSize = 10 * 1024 * 1024; // 10 MiB
         {
             Roxy::Chrono::FTimer Timer;
-            Byte* p = AlignAlloc.Allocate(LargeSize);
+            FByte* p = AlignAlloc.Allocate(LargeSize);
             REQUIRE(p != nullptr);
             AlignAlloc.DeAllocate(p);
             PRINT_TIME("FAlignAllocator (10 MiB single)", Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>());
@@ -297,7 +297,7 @@ TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
         FArenaAllocator LargeArena(LargeSize + 1024);
         {
             Roxy::Chrono::FTimer Timer;
-            Byte* p = LargeArena.Allocate(LargeSize);
+            FByte* p = LargeArena.Allocate(LargeSize);
             REQUIRE(p != nullptr);
             PRINT_TIME("FArenaAllocator (10 MiB single)", Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>());
         }

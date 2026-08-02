@@ -15,18 +15,15 @@
 
 #include <cstdint>
 #include <cstddef>
-#ifdef Byte // Undef Mac Byte Shit
-#undef Byte
-#endif
-using Int8      = std::int8_t;
-using UInt8     = std::uint8_t;
-using Int16     = std::int16_t;
-using UInt16    = std::uint16_t;
-using Int32     = std::int32_t;
-using UInt32    = std::uint32_t;
-using Int64     = std::int64_t;
-using UInt64    = std::uint64_t;
-using Byte      = std::byte;
+using I8        = std::int8_t;
+using U8        = std::uint8_t;
+using I16       = std::int16_t;
+using U16       = std::uint16_t;
+using I32       = std::int32_t;
+using U32       = std::uint32_t;
+using I64       = std::int64_t;
+using U64       = std::uint64_t;
+using FByte     = std::byte;
 using UIntPtr   = std::uintptr_t;
 using FMaxAlign = std::max_align_t;
 constexpr UIntPtr DefaultAlign = alignof(FMaxAlign);
@@ -128,5 +125,5 @@ template<typename T> using TArray = std::vector<T>;
 
 #pragma endregion
 
-using FIndex = Int32;
+using FIndex = I32;
 constexpr FIndex INVALID_INDEX { -1 };
