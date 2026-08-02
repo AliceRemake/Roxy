@@ -1,13 +1,10 @@
-# Roxy [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AliceRemake/Roxy/blob/main/LICENSE) [![IDE: Rider](https://img.shields.io/badge/IDE-Rider-%23DD1265?logo=jetbrains)](https://www.jetbrains.com/rider/)
+# Roxy
 
-## Build Status
-
-| Platform / Compiler | Debug | Release |
-|---------------------|-------|---------|
-| Windows MSVC        | [![Debug](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(windows-latest%2C%20Debug%2C%20cl%2C%20cl))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) | [![Release](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(windows-latest%2C%20Release%2C%20cl%2C%20cl))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) |
-| Windows ClangCL     | [![Debug](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(windows-latest%2C%20Debug%2C%20clang-cl%2C%20clang-cl))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) | [![Release](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(windows-latest%2C%20Release%2C%20clang-cl%2C%20clang-cl))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) |
-| Ubuntu GCC          | [![Debug](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(ubuntu-latest%2C%20Debug%2C%20gcc%2C%20g%2B%2B))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) | [![Release](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(ubuntu-latest%2C%20Release%2C%20gcc%2C%20g%2B%2B))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) |
-| Ubuntu Clang        | [![Debug](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(ubuntu-latest%2C%20Debug%2C%20clang%2C%20clang%2B%2B))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) | [![Release](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/cmake-multi-platform.yml?branch=main&label=&style=flat&job=build%20(ubuntu-latest%2C%20Release%2C%20clang%2C%20clang%2B%2B))](https://github.com/AliceRemake/Roxy/actions/workflows/cmake-multi-platform.yml) |
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AliceRemake/Roxy/blob/main/LICENSE)
+[![IDE: Rider](https://img.shields.io/badge/IDE-Rider-%23DD1265?logo=jetbrains)](https://www.jetbrains.com/rider/)
+[![linux](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/linux.yml?branch=main&label=Linux&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-linux.yml)
+[![windows](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/windows.yml?branch=main&label=Windows&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-windows.yml)
+[![macos](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/macos.yml?branch=main&label=macOS&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-macos.yml)
 
 ## LICENSE
 
