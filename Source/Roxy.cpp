@@ -1,5 +1,9 @@
+#include <RoxySTD/RoxySTD.h>
+
+ROXY_DISABLE_WARNINGS()
 #define RGFW_IMPLEMENTATION
 #include <RGFW.h>
+ROXY_RESTORE_WARNINGS()
 
 #include <RoxyFmt/RoxyFmt.h>
 #include <RoxyLog/RoxyLog.h>
