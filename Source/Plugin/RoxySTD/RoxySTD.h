@@ -1,4 +1,5 @@
 // ReSharper disable CppUnusedIncludeDirective
+// ReSharper disable CppClangTidyBugproneMacroParentheses
 #pragma once
 
 #include <cstdlib>
@@ -22,9 +23,17 @@ using Int64     = std::int64_t;
 using UInt64    = std::uint64_t;
 using Byte      = std::byte;
 using UIntPtr   = std::uintptr_t;
-
 using FMaxAlign = std::max_align_t;
 constexpr UIntPtr DefaultAlign = alignof(FMaxAlign);
+
+#include <atomic>
+template<typename T> using TAtomic = std::atomic<T>;
+
+#include <condition_variable>
+using FCV = std::condition_variable;
+
+#include <initializer_list>
+template<typename T> using TInitList = std::initializer_list<T>;
 
 #include <limits>
 template<typename T> using TLimits = std::numeric_limits<T>;
@@ -33,11 +42,8 @@ template<typename T> using TLimits = std::numeric_limits<T>;
 template<typename T> using TUnique = std::unique_ptr<T>;
 template<typename T> using TShared = std::shared_ptr<T>;
 
-#include <initializer_list>
-template<typename T> using TInitList = std::initializer_list<T>;
-
-#include <vector>
-template<typename T> using TArray = std::vector<T>;
+#include <mutex>
+using FMutex = std::mutex;
 
 #include <string>
 using FString     = std::string;
@@ -48,6 +54,9 @@ template<typename TValue> using TSet = std::unordered_set<TValue>;
 
 #include <unordered_map>
 template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, TValue>;
+
+#include <vector>
+template<typename T> using TArray = std::vector<T>;
 
 #pragma endregion
 
@@ -96,6 +105,18 @@ template<typename TKey, typename TValue> using TMap = std::unordered_map<TKey, T
 #endif
 
 #define ROXY_UNUSED [[maybe_unused]]
+
+#define ROXY_NO_COPY(ClassName) \
+    ClassName(const ClassName&) = delete; \
+    ClassName& operator=(const ClassName&) = delete; \
+
+#define ROXY_NO_MOVE(ClassName) \
+    ClassName(ClassName&&) = delete; \
+    ClassName& operator=(ClassName&&) = delete; \
+
+#define ROXY_NO_COPY_MOVE(ClassName) \
+    ROXY_NO_COPY(ClassName) \
+    ROXY_NO_MOVE(ClassName)
 
 #pragma endregion
 
