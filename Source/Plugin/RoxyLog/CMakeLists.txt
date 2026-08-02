@@ -29,8 +29,6 @@ ADD_EXECUTABLE(RoxyLog_UnitTest
     RoxyLog_UnitTest.cpp
 )
 
-TARGET_COMPILE_OPTIONS(RoxyLog_UnitTest PRIVATE /W4 /WX /wd4530)
-
 TARGET_LINK_LIBRARIES(RoxyLog_UnitTest
     PRIVATE RoxyLog doctest::doctest
 )
