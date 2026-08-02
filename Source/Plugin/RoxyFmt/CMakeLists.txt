@@ -24,6 +24,7 @@ TARGET_LINK_LIBRARIES(RoxyFmt
     PUBLIC  ${ThirdPartyLibraries}
 )
 
+IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyFmt_UnitTest
     RoxyFmt_UnitTest.cpp
@@ -32,3 +33,6 @@ ADD_EXECUTABLE(RoxyFmt_UnitTest
 TARGET_LINK_LIBRARIES(RoxyFmt_UnitTest
     PRIVATE RoxyFmt doctest::doctest
 )
+
+ADD_TEST(NAME RoxyFmt_UnitTest COMMAND RoxyFmt_UnitTest)
+ENDIF()

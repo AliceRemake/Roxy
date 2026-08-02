@@ -6,7 +6,6 @@ SET(PrivateDependPlugins
 
 SET(PublicDependPlugins
     RoxySTD
-    RoxyLog
 )
 
 ADD_LIBRARY(RoxyChrono STATIC
@@ -24,11 +23,15 @@ TARGET_LINK_LIBRARIES(RoxyChrono
     PUBLIC  ${ThirdPartyLibraries}
 )
 
+IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyChrono_UnitTest
     RoxyChrono_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyChrono_UnitTest
-    PRIVATE RoxyChrono doctest::doctest
+    PRIVATE RoxyChrono RoxyLog doctest::doctest
 )
+
+ADD_TEST(NAME RoxyChrono_UnitTest COMMAND RoxyChrono_UnitTest)
+ENDIF()

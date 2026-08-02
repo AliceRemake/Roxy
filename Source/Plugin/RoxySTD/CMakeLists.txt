@@ -21,6 +21,7 @@ TARGET_LINK_LIBRARIES(RoxySTD
     PUBLIC ${PublicDependPlugins}
 )
 
+IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxySTD_UnitTest
     RoxySTD_UnitTest.cpp
@@ -29,3 +30,6 @@ ADD_EXECUTABLE(RoxySTD_UnitTest
 TARGET_LINK_LIBRARIES(RoxySTD_UnitTest
     PRIVATE RoxySTD doctest::doctest
 )
+
+ADD_TEST(NAME RoxySTD_UnitTest COMMAND RoxySTD_UnitTest)
+ENDIF()

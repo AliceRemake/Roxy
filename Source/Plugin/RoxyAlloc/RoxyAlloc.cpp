@@ -30,9 +30,9 @@ void FAlignAllocator::DeAllocate(Byte* Ptr) const noexcept
 }
 
 FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
-    : Buffer   (Allocate<Byte>(FAlignAllocator{}, InCapacity))
+    : Buffer   (Allocate<Byte>(FAlignAllocator{}, InCapacity, alignof(FMaxAlign)))
     , Current  (Buffer)
-    , Capacity (InCapacity)
+    , Capacity (AlignTo(InCapacity, alignof(FMaxAlign)))
 {
 }
 
@@ -65,6 +65,21 @@ Byte* FArenaAllocator::Allocate(UIntPtr Bytes, UIntPtr Align) noexcept
     const auto Aligned = AlignTo(Current, Align);
     if (Aligned + Bytes > Buffer + Capacity)
     {
+        ROXY_WARN
+        (
+            Roxy::Log::ELogCategory::Alloc,
+            "Can Not Allocate Memory."
+            "\n\tCurrent  = {}"
+            "\n\tBuffer   = {}"
+            "\n\tCapacity = {}"
+            "\n\tAligned  = {}"
+            "\n\tBytes    = {}",
+            static_cast<void*>(Current),
+            static_cast<void*>(Buffer),
+            Capacity,
+            static_cast<void*>(Aligned),
+            Bytes
+        );
         return nullptr;
     }
     Current = Aligned + Bytes;
@@ -73,7 +88,7 @@ Byte* FArenaAllocator::Allocate(UIntPtr Bytes, UIntPtr Align) noexcept
 
 void FArenaAllocator::DeAllocate(Byte* Ptr ROXY_UNUSED) noexcept
 {
-    ROXY_WARN(Roxy::Log::ELogCategory::Default, "{}", "Can Not Call DeAllocate On FArenaAllocator. Use `Rewind` Instead.");
+    ROXY_WARN(Roxy::Log::ELogCategory::Alloc, "{}", "Can Not Call DeAllocate On FArenaAllocator. Use `Rewind` Instead.");
 }
 
 void FArenaAllocator::Rewind() noexcept

@@ -25,10 +25,14 @@ TARGET_LINK_LIBRARIES(RoxyAlloc
 )
 
 # Unit Test
+IF(ROXY_BUILD_TEST)
 ADD_EXECUTABLE(RoxyAlloc_UnitTest
     RoxyAlloc_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyAlloc_UnitTest
-    PRIVATE RoxyAlloc doctest::doctest
+    PRIVATE RoxyAlloc RoxyChrono RoxyLog doctest::doctest
 )
+
+ADD_TEST(NAME RoxyAlloc_UnitTest COMMAND RoxyAlloc_UnitTest)
+ENDIF()

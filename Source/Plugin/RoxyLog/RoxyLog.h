@@ -46,7 +46,8 @@ constexpr auto DefaultPatternWithFileLineFunc = "[%Y-%m-%d][%H:%M:%S][%^%L%$][%@
 
 enum class ELogCategory : UInt8
 {
-    Default
+    Default,
+    Alloc,
 };
 
 enum class ELogLevel : UInt8
@@ -74,6 +75,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr const char* GetEnumName(const ELogCategory 
     switch (LogCategory)
     {
     case ELogCategory::Default: return "Default";
+    case ELogCategory::Alloc:   return "Alloc";
     }
     return "Unknown";
 }
