@@ -30,9 +30,9 @@ void FAlignAllocator::DeAllocate(Byte* Ptr) const noexcept
 }
 
 FArenaAllocator::FArenaAllocator(const UIntPtr InCapacity) noexcept
-    : Buffer   (Allocate<Byte>(FAlignAllocator{}, InCapacity, alignof(FMaxAlign)))
+    : Buffer   (Allocate<Byte>(FAlignAllocator{}, InCapacity, DefaultAlign))
     , Current  (Buffer)
-    , Capacity (AlignTo(InCapacity, alignof(FMaxAlign)))
+    , Capacity (AlignTo(InCapacity, DefaultAlign))
 {
 }
 

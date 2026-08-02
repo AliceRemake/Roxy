@@ -22,7 +22,9 @@ using Int64     = std::int64_t;
 using UInt64    = std::uint64_t;
 using Byte      = std::byte;
 using UIntPtr   = std::uintptr_t;
+
 using FMaxAlign = std::max_align_t;
+constexpr UIntPtr DefaultAlign = alignof(FMaxAlign);
 
 #include <limits>
 template<typename T> using TLimits = std::numeric_limits<T>;

@@ -24,7 +24,7 @@ concept CAllocator = requires (T Allocator, Byte* Ptr, UIntPtr Bytes, UIntPtr Al
 };
 
 template<typename T, typename TAllocator> requires CAllocator<std::remove_cvref_t<TAllocator>>
-ROXY_NODISCARD ROXY_INLINE T* Allocate(TAllocator&& Allocator, UIntPtr Bytes, UIntPtr Align = alignof(FMaxAlign)) noexcept
+ROXY_NODISCARD ROXY_INLINE T* Allocate(TAllocator&& Allocator, UIntPtr Bytes, UIntPtr Align = DefaultAlign) noexcept
 {
     ROXY_ASSERT(!!Bytes);
     Byte* Ptr = Allocator.Allocate(Bytes, Align);
@@ -42,7 +42,7 @@ class FAlignAllocator
 public:
     FAlignAllocator() = default; /* EBO */
 
-    ROXY_NODISCARD Byte* Allocate(UIntPtr Bytes, UIntPtr Align = alignof(FMaxAlign)) const noexcept;
+    ROXY_NODISCARD Byte* Allocate(UIntPtr Bytes, UIntPtr Align = DefaultAlign) const noexcept;
 
     void DeAllocate(Byte* Ptr) const noexcept;
 };
@@ -61,7 +61,7 @@ public:
     FArenaAllocator(FArenaAllocator&&) noexcept;
     FArenaAllocator& operator=(FArenaAllocator&&) noexcept;
 
-    ROXY_NODISCARD Byte* Allocate(UIntPtr Bytes, UIntPtr Align = alignof(FMaxAlign)) noexcept;
+    ROXY_NODISCARD Byte* Allocate(UIntPtr Bytes, UIntPtr Align = DefaultAlign) noexcept;
 
     void DeAllocate(Byte* Ptr) noexcept;
 
