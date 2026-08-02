@@ -1,0 +1,72 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          # Windows MSVC (Debug & Release)
+          - os: windows-latest
+            build_type: Debug
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: windows-latest
+            build_type: Release
+            c_compiler: cl
+            cpp_compiler: cl
+
+          # Ubuntu GCC (Debug & Release)
+          - os: ubuntu-latest
+            build_type: Debug
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+
+          # Ubuntu Clang (Debug & Release)
+          - os: ubuntu-latest
+            build_type: Debug
+            c_compiler: clang
+            cpp_compiler: clang++
+          - os: ubuntu-latest
+            build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Ninja (if needed)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+    - name: Configure CMake (Ninja Multi-Config)
+      run: >
+        cmake -B ${{ github.workspace }}/build
+        -G "Ninja Multi-Config"
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DROXY_BUILD_UNIT_TEST=ON
+        -DCMAKE_CXX_STANDARD=23
+        -S ${{ github.workspace }}
+
+    - name: Build all targets
+      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
+
+    - name: Run unit tests
+      working-directory: ${{ github.workspace }}/build
+      run: ctest -C ${{ matrix.build_type }} --output-on-failure
