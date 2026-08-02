@@ -8,8 +8,14 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxySTD STATIC
-    RoxySTD.h
-    RoxySTD.cpp
+    RoxySTD/RoxyAlias.h
+    RoxySTD/RoxyAlias.cpp
+    RoxySTD/RoxyThreadSafety.h
+    RoxySTD/RoxyThreadSafety.cpp
+    RoxySTD/RoxyQueue.h
+    RoxySTD/RoxyQueue.cpp
+    RoxySTD/RoxySTD.h
+    RoxySTD/RoxySTD.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxySTD
@@ -24,7 +30,7 @@ TARGET_LINK_LIBRARIES(RoxySTD
 IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxySTD_UnitTest
-    RoxySTD_UnitTest.cpp
+    RoxySTD/RoxySTD_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxySTD_UnitTest

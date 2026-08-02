@@ -2,7 +2,7 @@
 // ReSharper disable CppClangTidyMiscUseInternalLinkage
 #include "RoxyAlloc.h"
 
-#include <RoxyLog.h>
+#include <RoxyLog/RoxyLog.h>
 
 namespace Roxy::Alloc
 {

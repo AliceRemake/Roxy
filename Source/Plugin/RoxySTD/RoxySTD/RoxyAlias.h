@@ -6,6 +6,7 @@
 
 #include <bit>
 #include <chrono>
+#include <numeric>
 #include <type_traits>
 #include <utility>
 

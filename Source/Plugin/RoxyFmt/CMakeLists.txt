@@ -10,8 +10,8 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyFmt STATIC
-    RoxyFmt.h
-    RoxyFmt.cpp
+    RoxyFmt/RoxyFmt.h
+    RoxyFmt/RoxyFmt.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxyFmt
@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(RoxyFmt
 IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyFmt_UnitTest
-    RoxyFmt_UnitTest.cpp
+    RoxyFmt/RoxyFmt_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyFmt_UnitTest

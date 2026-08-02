@@ -2,9 +2,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include <RoxyLog.h>
-#include <RoxyAlloc.h>
-#include <RoxyChrono.h>
+#include <RoxyLog/RoxyLog.h>
+#include <RoxyAlloc/RoxyAlloc.h>
+#include <RoxyChrono/RoxyChrono.h>
 
 using namespace Roxy::Alloc;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <RoxySTD.h>
+#include <RoxySTD/RoxySTD.h>
 
 namespace Roxy::MT
 {
@@ -33,6 +33,7 @@ private:
 class FSpinLock
 {
 public:
+    FSpinLock() = default;
     ~FSpinLock() = default;
 
     ROXY_NO_COPY_MOVE(FSpinLock)
@@ -64,6 +65,7 @@ static_assert(CLock<FSpinLock>);
 class FMutexLock
 {
 public:
+    FMutexLock() = default;
     ~FMutexLock() = default;
 
     ROXY_NO_COPY_MOVE(FMutexLock)

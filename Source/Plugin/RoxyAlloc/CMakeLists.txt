@@ -10,8 +10,8 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyAlloc STATIC
-    RoxyAlloc.h
-    RoxyAlloc.cpp
+    RoxyAlloc/RoxyAlloc.h
+    RoxyAlloc/RoxyAlloc.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxyAlloc
@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(RoxyAlloc
 # Unit Test
 IF(ROXY_BUILD_TEST)
 ADD_EXECUTABLE(RoxyAlloc_UnitTest
-    RoxyAlloc_UnitTest.cpp
+    RoxyAlloc/RoxyAlloc_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyAlloc_UnitTest

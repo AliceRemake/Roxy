@@ -9,8 +9,8 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyChrono STATIC
-    RoxyChrono.h
-    RoxyChrono.cpp
+    RoxyChrono/RoxyChrono.h
+    RoxyChrono/RoxyChrono.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxyChrono
@@ -26,7 +26,7 @@ TARGET_LINK_LIBRARIES(RoxyChrono
 IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyChrono_UnitTest
-    RoxyChrono_UnitTest.cpp
+    RoxyChrono/RoxyChrono_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyChrono_UnitTest

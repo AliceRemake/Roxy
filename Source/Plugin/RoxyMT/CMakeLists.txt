@@ -9,8 +9,12 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyMT STATIC
-    RoxyMT.h
-    RoxyMT.cpp
+    RoxyMT/RoxyLock.h
+    RoxyMT/RoxyLock.cpp
+    RoxyMT/RoxyQueue.h
+    RoxyMT/RoxyQueue.cpp
+    RoxyMT/RoxyMT.h
+    RoxyMT/RoxyMT.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxyMT
@@ -26,11 +30,11 @@ TARGET_LINK_LIBRARIES(RoxyMT
 IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyMT_UnitTest
-    RoxyMT_UnitTest.cpp
+    RoxyMT/RoxyMT_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyMT_UnitTest
-    PRIVATE RoxyMT doctest::doctest
+    PRIVATE RoxyMT RoxyChrono RoxyLog doctest::doctest
 )
 
 ADD_TEST(NAME RoxyMT_UnitTest COMMAND RoxyMT_UnitTest)

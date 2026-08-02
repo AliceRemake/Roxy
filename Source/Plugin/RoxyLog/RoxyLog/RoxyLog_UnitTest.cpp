@@ -2,7 +2,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include <RoxyLog.h>
+#include <RoxyLog/RoxyLog.h>
 
 constexpr FStringView PluginName = "RoxyLog";
 

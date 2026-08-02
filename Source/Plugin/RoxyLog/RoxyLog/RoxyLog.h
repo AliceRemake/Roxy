@@ -26,7 +26,7 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_CRITICAL
 #endif
 
-#include <RoxySTD.h>
+#include <RoxySTD/RoxySTD.h>
 
 ROXY_DISABLE_WARNINGS()
 //*@Temp: Suppress spdlog Deprecation Warnings.
@@ -37,7 +37,7 @@ ROXY_DISABLE_WARNINGS()
 #include <spdlog/spdlog.h>
 ROXY_RESTORE_WARNINGS()
 
-#include <RoxyFmt.h>
+#include <RoxyFmt/RoxyFmt.h>
 
 namespace Roxy::Log
 {

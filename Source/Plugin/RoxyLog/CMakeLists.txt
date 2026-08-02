@@ -11,8 +11,8 @@ SET(PrivateDependPlugins
 )
 
 ADD_LIBRARY(RoxyLog STATIC
-    RoxyLog.h
-    RoxyLog.cpp
+    RoxyLog/RoxyLog.h
+    RoxyLog/RoxyLog.cpp
 )
 
 TARGET_INCLUDE_DIRECTORIES(RoxyLog PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -26,7 +26,7 @@ TARGET_LINK_LIBRARIES(RoxyLog
 IF(ROXY_BUILD_TEST)
 # Unit Test
 ADD_EXECUTABLE(RoxyLog_UnitTest
-    RoxyLog_UnitTest.cpp
+    RoxyLog/RoxyLog_UnitTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(RoxyLog_UnitTest

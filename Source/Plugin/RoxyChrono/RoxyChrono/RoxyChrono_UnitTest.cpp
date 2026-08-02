@@ -2,8 +2,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include <RoxyLog.h>
-#include <RoxyChrono.h>
+#include <RoxyLog/RoxyLog.h>
+#include <RoxyChrono/RoxyChrono.h>
 
 using namespace Roxy::Chrono;
 
