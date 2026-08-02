@@ -101,7 +101,10 @@ template<typename T> using TArray = std::vector<T>;
 #define ROXY_DISABLE_WARNINGS() __pragma(warning(push, 0))
 #define ROXY_RESTORE_WARNINGS() __pragma(warning(pop))
 #else
-#define ROXY_DISABLE_WARNINGS() _Pragma("GCC diagnostic push")
+#define ROXY_DISABLE_WARNINGS() \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"") \
+    _Pragma("GCC diagnostic ignored \"-Wunused-function\"")
 #define ROXY_RESTORE_WARNINGS() _Pragma("GCC diagnostic pop")
 #endif
 

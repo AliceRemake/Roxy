@@ -1,0 +1,59 @@
+name: windows
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - c_compiler: cl
+            cpp_compiler: cl
+            build_type: Debug
+          - c_compiler: cl
+            cpp_compiler: cl
+            build_type: Release
+          - c_compiler: clang-cl
+            cpp_compiler: clang-cl
+            build_type: Debug
+          - c_compiler: clang-cl
+            cpp_compiler: clang-cl
+            build_type: Release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
+      - name: Get CMake 4.1.1
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "4.1.1"
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ github.workspace }}/build
+          -G "Ninja Multi-Config"
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DROXY_BUILD_UNIT_TEST=ON
+          -DCMAKE_CXX_STANDARD=23
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure

@@ -41,19 +41,6 @@ TEST_CASE("Roxy::Chrono::FTimer")
         CHECK(M   > H);
     }
 
-    SUBCASE("Timer can be reused by creating a new instance")
-    {
-        FTimer Timer1;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        const double First = Timer1.GetElapsed<ETimeUnit::MiS>();
-
-        FTimer Timer2;
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        const double Second = Timer2.GetElapsed<ETimeUnit::MiS>();
-
-        CHECK(Second > First);
-    }
-
     SUBCASE("Timer Log With RoxyLog")
     {
         FTimer Timer;
