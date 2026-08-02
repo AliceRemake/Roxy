@@ -1,5 +1,5 @@
-#include <RoxyFmt.h>
-#include <RoxyLog.h>
+#include <RoxyFmt/RoxyFmt.h>
+#include <RoxyLog/RoxyLog.h>
 
 int main(const Int32 Argc, const char** Argv)
 {
@@ -15,6 +15,4 @@ int main(const Int32 Argc, const char** Argv)
     {
         ROXY_WARN(Roxy::Log::ELogCategory::Default, "[Frame] {}", GNrFrame);
     }
-
-    // return 0;
 }
