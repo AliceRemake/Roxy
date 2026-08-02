@@ -23,6 +23,15 @@ jobs:
             build_type: Release
             c_compiler: cl
             cpp_compiler: cl
+          # Windows ClangCL (Debug & Release)
+          - os: windows-latest
+            build_type: Debug
+            c_compiler: clang-cl
+            cpp_compiler: clang-cl
+          - os: windows-latest
+            build_type: Release
+            c_compiler: clang-cl
+            cpp_compiler: clang-cl
           # Ubuntu GCC (Debug & Release)
           - os: ubuntu-latest
             build_type: Debug
