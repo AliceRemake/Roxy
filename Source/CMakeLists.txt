@@ -1,5 +1,5 @@
 if(MSVC)
-    ADD_COMPILE_OPTIONS(/GR- /EHs- /EHc- /W4 /WX /w4702 /nologo)
+    ADD_COMPILE_OPTIONS(/GR- /EHs- /EHc- /W4 /WX /wd4702 /nologo)
     ADD_COMPILE_DEFINITIONS("_HAS_EXCEPTIONS=0")
 else()
     ADD_COMPILE_OPTIONS(-fno-rtti -fno-exceptions -Wall -Wextra -Werror)
