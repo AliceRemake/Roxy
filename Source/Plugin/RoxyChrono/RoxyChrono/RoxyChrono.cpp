@@ -39,4 +39,29 @@ template<> double FTimer::GetElapsed<ETimeUnit::H>() const
     return std::chrono::duration<double, std::ratio<3600>>(Now - Before).count();
 }
 
+template<> void SleepFor<ETimeUnit::NaS>(double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double, std::nano>(Time));
+}
+template<> void SleepFor<ETimeUnit::MuS>(double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double, std::micro>(Time));
+}
+template<> void SleepFor<ETimeUnit::MiS>(double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(Time));
+}
+template<> void SleepFor<ETimeUnit::S>  (double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double>(Time));
+}
+template<> void SleepFor<ETimeUnit::M>  (double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<60>>(Time));
+}
+template<> void SleepFor<ETimeUnit::H>  (double Time) noexcept
+{
+    std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<3600>>(Time));
+}
+
 }

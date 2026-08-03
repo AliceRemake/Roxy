@@ -39,7 +39,7 @@ int main(const I32 Argc, const char** Argv)
         const auto Elapsed = FrameTimer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
         if (const auto SleepTime = TargetFrameTime - Elapsed; SleepTime > 0.0)
         {
-            std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(SleepTime));
+            Roxy::Chrono::SleepFor<Roxy::Chrono::ETimeUnit::MiS>(SleepTime);
         }
     }
     RGFW_window_close(Window);
