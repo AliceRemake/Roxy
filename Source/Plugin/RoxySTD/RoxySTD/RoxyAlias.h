@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 
+#include <algorithm>
 #include <bit>
 #include <chrono>
 #include <numeric>
