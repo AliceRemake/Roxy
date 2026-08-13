@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <bit>
 #include <chrono>
+#include <cmath>
+#include <numbers>
 #include <numeric>
+#include <random>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -72,15 +75,11 @@ template<typename T> using TArray = std::vector<T>;
 #endif
 
 #if ROXY_ENABLE_ASSERT
-#ifdef NDEBUG
-#include <cassert>
-#define ROXY_ASSERT(Expr) do { if (!(Expr)) { ROXY_DEBUG_BREAK(); std::abort(); } } while(false)
-#else
-#include <cassert>
-#define ROXY_ASSERT(Expr) do { if (!(Expr)) { assert(Expr); } } while(false)
-#endif
+#define ROXY_ASSERT(Expr) do { if (!(Expr)) { if (std::is_constant_evaluated()) { std::abort(); } else { ROXY_DEBUG_BREAK(); std::abort(); } } } while(false)
+#define ROXY_ASSERT_MSG(Expr, Msg) ROXY_ASSERT(Expr)
 #else
 #define ROXY_ASSERT(Expr) do { if (!(Expr)) { std::abort(); } } while(false)
+#define ROXY_ASSERT_MSG(Expr, Msg) ROXY_ASSERT(Expr)
 #endif
 
 #if ROXY_ENABLE_NODISCARD

@@ -9,6 +9,16 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyMath STATIC
+    RoxyMath/SIMD/RoxyMathMatSIMD.h
+    RoxyMath/SIMD/RoxyMathMatSIMD.cpp
+    RoxyMath/RoxyMathMat.h
+    RoxyMath/RoxyMathMat.cpp
+    RoxyMath/SIMD/RoxyMathVecSIMD.h
+    RoxyMath/SIMD/RoxyMathVecSIMD.cpp
+    RoxyMath/RoxyMathVec.h
+    RoxyMath/RoxyMathVec.cpp
+    RoxyMath/RoxyMathCommon.h
+    RoxyMath/RoxyMathCommon.cpp
     RoxyMath/RoxyMath.h
     RoxyMath/RoxyMath.cpp
 )
@@ -30,7 +40,7 @@ ADD_EXECUTABLE(RoxyMath_UnitTest
 )
 
 TARGET_LINK_LIBRARIES(RoxyMath_UnitTest
-    PRIVATE RoxyMath doctest::doctest
+    PRIVATE RoxyMath RoxyChrono RoxyLog doctest::doctest
 )
 
 ADD_TEST(NAME RoxyMath_UnitTest COMMAND RoxyMath_UnitTest)
