@@ -14,7 +14,7 @@ OPTION(ROXY_ENABLE_ASSERT    "Enable C Style Assert"      ON)
 OPTION(ROXY_ENABLE_NODISCARD "Enable Attribute Nodiscard" ON)
 OPTION(ROXY_ENABLE_INLINE    "Enable Force Inline"        ON)
 OPTION(ROXY_BUILD_TEST       "Build Tests"                ON)
-OPTION(ROXY_ENABLE_SIMD      "Enable SIMD"                ON)
+OPTION(ROXY_ENABLE_SIMD      "Enable SIMD"                OFF)
 
 IF(ROXY_ENABLE_ASSERT)
     ADD_COMPILE_DEFINITIONS(ROXY_ENABLE_ASSERT=1)
