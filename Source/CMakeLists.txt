@@ -2,7 +2,17 @@ IF(MSVC)
     ADD_COMPILE_OPTIONS(/GR- /EHs- /EHc- /W4 /WX /wd4702 /nologo)
     ADD_COMPILE_DEFINITIONS("_HAS_EXCEPTIONS=0")
 ELSE()
-    ADD_COMPILE_OPTIONS(-fno-rtti -fno-exceptions -Wall -Wextra -Werror)
+    ADD_COMPILE_OPTIONS(-fno-rtti -fno-exceptions -Wall -Wextra -Werror
+        -msse
+        -msse2
+        -msse3
+        -mssse3
+        -msse4.1
+        -msse4.2
+        -mavx
+        -mavx2
+        -mfma
+    )
 ENDIF()
 
 # Plugin

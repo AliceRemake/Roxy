@@ -116,10 +116,10 @@ TEST_CASE("Exp and Log")
 
 TEST_CASE("Pow")
 {
-    constexpr int Pow8 = Roxy::Math::Pow(2, 3);
+    constexpr auto Pow8 = Roxy::Math::Pow(2., 3.);
     CHECK(Pow8 == 8);
 
-    CHECK(Roxy::Math::Pow(2, 3) == 8);
+    CHECK(Roxy::Math::Pow(2., 3.) == 8);
     CHECK(Roxy::Math::Pow(2.0, 3) == doctest::Approx(8.0));
     CHECK(Roxy::Math::Pow(2.0, 0.5) == doctest::Approx(std::sqrt(2.0)));
     CHECK(Roxy::Math::Pow(2.0, -1) == doctest::Approx(0.5));

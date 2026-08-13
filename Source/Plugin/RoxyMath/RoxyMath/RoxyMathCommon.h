@@ -245,7 +245,7 @@ ROXY_NODISCARD consteval T Log(T X) noexcept
     return Result;
 }
 
-template<CArithmetic T, CIntegral U>
+template<CFloatingPoint T, CIntegral U>
 ROXY_NODISCARD consteval T Pow(T Base, U Exponent) noexcept
 {
     ROXY_ASSERT_MSG(!(Base == T(0) && Exponent <= 0), "Pow: No Math Definition");
@@ -268,7 +268,7 @@ ROXY_NODISCARD consteval T Pow(T Base, U Exponent) noexcept
     return bNegExp ? T(1) / Result : Result;
 }
 
-template<CArithmetic T, CFloatingPoint U>
+template<CFloatingPoint T, CFloatingPoint U>
 ROXY_NODISCARD consteval auto Pow(T Base, U Exponent) noexcept -> std::common_type_t<T, U>
 {
     using R = std::common_type_t<T, U>;
@@ -441,14 +441,14 @@ ROXY_NODISCARD ROXY_INLINE constexpr T Log10(T X) noexcept
 }
 
 
-template<CArithmetic T, CIntegral U>
+template<CFloatingPoint T, CIntegral U>
 ROXY_NODISCARD ROXY_INLINE constexpr T Pow(T Base, U Exponent) noexcept
 {
     if consteval { return Detail::Pow(Base, Exponent); }
     return std::pow(Base, Exponent);
 }
 
-template<CArithmetic T, CFloatingPoint U>
+template<CFloatingPoint T, CFloatingPoint U>
 ROXY_NODISCARD ROXY_INLINE constexpr auto Pow(T Base, U Exponent) noexcept -> std::common_type_t<T, U>
 {
     if consteval { return Detail::Pow(Base, Exponent); }
