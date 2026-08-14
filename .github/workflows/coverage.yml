@@ -24,11 +24,6 @@ jobs:
             libx11-dev libxrandr-dev libxinerama-dev \
             libxcursor-dev libxi-dev libgl1-mesa-dev
 
-      - name: Get CMake 4.1.1
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "4.1.1"
-
       - name: Configure CMake with coverage
         run: >
           cmake -B ${{ github.workspace }}/build
@@ -36,7 +31,7 @@ jobs:
           -DCMAKE_C_COMPILER=gcc
           -DCMAKE_CXX_COMPILER=g++
           -DCMAKE_BUILD_TYPE=Debug
-          -DROXY_BUILD_UNIT_TEST=ON
+          -DROXY_BUILD_TEST=ON
           -DROXY_ENABLE_COVERAGE=ON
           -S ${{ github.workspace }}
 
@@ -54,7 +49,6 @@ jobs:
             --output-file coverage.info \
             --ignore-errors gcov,source \
             --rc geninfo_unexecuted_blocks=1
-        continue-on-error: false
 
       - name: Filter out system and external code
         run: |
@@ -84,4 +78,3 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          verbose: true
