@@ -63,7 +63,7 @@ TEST_CASE("Sqrt and InvSqrt")
 
 TEST_CASE("Trigonometric functions")
 {
-    for (constexpr double Angles[] = {-10.0, -1.0, 0.0, 0.5, 1.0, 10.0}; double X : Angles)
+    for (constexpr double Angles[] = {-10.0, -1.0, 0.0, 0.5, 1.0, 10.0}; const auto& X : Angles)
     {
         CHECK(Roxy::Math::Sin(X) == doctest::Approx(std::sin(X)));
         CHECK(Roxy::Math::Cos(X) == doctest::Approx(std::cos(X)));
@@ -73,13 +73,13 @@ TEST_CASE("Trigonometric functions")
 
 TEST_CASE("Inverse trigonometric functions")
 {
-    for (constexpr double Values[] = {-1.0, -0.5, 0.0, 0.5, 1.0}; double X : Values)
+    for (constexpr double Values[] = {-1.0, -0.5, 0.0, 0.5, 1.0}; const auto& X : Values)
     {
         CHECK(Roxy::Math::Asin(X) == doctest::Approx(std::asin(X)));
         CHECK(Roxy::Math::Acos(X) == doctest::Approx(std::acos(X)));
     }
 
-    for (constexpr double Values[] = {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0}; double X : Values)
+    for (constexpr double Values[] = {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0}; const auto& X : Values)
     {
         CHECK(Roxy::Math::Atan(X) == doctest::Approx(std::atan(X)));
     }
@@ -93,7 +93,7 @@ TEST_CASE("Inverse trigonometric functions")
 
 TEST_CASE("Hyperbolic functions")
 {
-    for (constexpr double Values[] = {-2.0, -0.5, 0.0, 0.5, 2.0}; double X : Values)
+    for (constexpr double Values[] = {-2.0, -0.5, 0.0, 0.5, 2.0}; const auto& X : Values)
     {
         CHECK(Roxy::Math::Sinh(X) == doctest::Approx(std::sinh(X)));
         CHECK(Roxy::Math::Cosh(X) == doctest::Approx(std::cosh(X)));
