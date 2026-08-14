@@ -4,10 +4,11 @@
 
 namespace Roxy::Math
 {
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TVecBase;
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TVec;
-
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMatBase;
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMat;
+template <CFloatingPoint T> class TQuat;
 
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4)
 class TVecBase
@@ -68,7 +69,7 @@ public:
         return Payload[Idx];
     }
 
-    template <typename U> requires std::is_convertible_v<T, U>
+    template <CFloatingPoint U> requires std::is_convertible_v<T, U>
     ROXY_NODISCARD ROXY_INLINE constexpr TVec<U, Dim> As() const noexcept
     {
         if constexpr (Dim == 2)
@@ -241,14 +242,14 @@ public:
         }
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr T SqrLen() const noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr T SqrLength() const noexcept
     {
         return Dot(static_cast<const FVec&>(*this), static_cast<const FVec&>(*this));
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr T Len() const noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr T Length() const noexcept
     {
-        return static_cast<T>(Sqrt(SqrLen()));
+        return static_cast<T>(Sqrt(SqrLength()));
     }
 };
 
@@ -478,7 +479,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(T scalar, const TVec
     }
 }
 
-template <CFloatingPoint T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T>
 class TVec<T, 2> : public TVecBase<T, 2>
 {
 public:
@@ -495,7 +496,7 @@ public:
     ROXY_NODISCARD ROXY_INLINE constexpr const T& Y() const noexcept { return this->Payload[1]; }
 };
 
-template <CFloatingPoint T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T>
 class TVec<T, 3> : public TVecBase<T, 3>
 {
 public:
@@ -515,7 +516,7 @@ public:
     ROXY_NODISCARD ROXY_INLINE constexpr const T& Z() const noexcept { return this->Payload[2]; }
 };
 
-template <CFloatingPoint T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T>
 class TVec<T, 4> : public TVecBase<T, 4>
 {
 public:

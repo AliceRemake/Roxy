@@ -9,6 +9,8 @@ SET(PublicDependPlugins
 )
 
 ADD_LIBRARY(RoxyMath STATIC
+    RoxyMath/RoxyMathQuat.h
+    RoxyMath/RoxyMathQuat.cpp
     RoxyMath/SIMD/RoxyMathMatSIMD.h
     RoxyMath/SIMD/RoxyMathMatSIMD.cpp
     RoxyMath/RoxyMathMat.h

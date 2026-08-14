@@ -4,7 +4,11 @@
 
 namespace Roxy::Math
 {
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TVecBase;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TVec;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMatBase;
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMat;
+template <CFloatingPoint T> class TQuat;
 
 template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4)
 class TMatBase
@@ -119,7 +123,7 @@ public:
         return !(*this == Oth);
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr FMat Transpose() const noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr FMat Trans() const noexcept
     {
         FMat Result;
         for (FIndex Row = 0; Row < Dim; ++Row)
@@ -322,7 +326,7 @@ public:
     friend class TMatBase<T, 3>;
     using TMatBase<T, 3>::TMatBase;
 
-    ROXY_NODISCARD ROXY_INLINE constexpr T Determinant() const noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr T Det() const noexcept
     {
         const T A = (*this)[0,0], B = (*this)[0,1], C = (*this)[0,2];
         const T D = (*this)[1,0], E = (*this)[1,1], F = (*this)[1,2];
@@ -332,11 +336,11 @@ public:
              + C * (D * H - E * G);
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr TMat Inverse() const noexcept requires std::is_floating_point_v<T>
+    ROXY_NODISCARD ROXY_INLINE constexpr TMat Inv() const noexcept requires std::is_floating_point_v<T>
     {
-        const T Det = Determinant();
-        ROXY_ASSERT_MSG(Abs(Det) > Eps<T>, "Inverse: Singular Matrix");
-        const T InvDet = T{1} / Det;
+        const T _Det = Det();
+        ROXY_ASSERT_MSG(Abs(_Det) > Eps<T>, "Inverse: Singular Matrix");
+        const T InvDet = T{1} / _Det;
 
         TMat Cof;
         Cof[0,0] = (*this)[1,1] * (*this)[2,2] - (*this)[1,2] * (*this)[2,1];
@@ -349,7 +353,7 @@ public:
         Cof[2,1] = (*this)[0,2] * (*this)[1,0] - (*this)[0,0] * (*this)[1,2];
         Cof[2,2] = (*this)[0,0] * (*this)[1,1] - (*this)[0,1] * (*this)[1,0];
 
-        return InvDet * Cof.Transpose();
+        return InvDet * Cof.Trans();
     }
 };
 
@@ -360,7 +364,7 @@ public:
     friend class TMatBase<T, 4>;
     using TMatBase<T, 4>::TMatBase;
 
-    ROXY_NODISCARD ROXY_INLINE constexpr T Determinant() const noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr T Det() const noexcept
     {
         const T A = (*this)[0,0], B = (*this)[0,1], C = (*this)[0,2], D = (*this)[0,3];
         const T E = (*this)[1,0], F = (*this)[1,1], G = (*this)[1,2], H = (*this)[1,3];
@@ -373,11 +377,11 @@ public:
              - D * (E * (J * O - K * N) - F * (I * O - K * M) + G * (I * N - J * M));
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr TMat Inverse() const noexcept requires std::is_floating_point_v<T>
+    ROXY_NODISCARD ROXY_INLINE constexpr TMat Inv() const noexcept requires std::is_floating_point_v<T>
     {
-        const T Det = Determinant();
-        ROXY_ASSERT_MSG(Abs(Det) > Eps<T>, "Inverse: Singular Matrix");
-        const T InvDet = T{1} / Det;
+        const T _Det = Det();
+        ROXY_ASSERT_MSG(Abs(_Det) > Eps<T>, "Inverse: Singular Matrix");
+        const T InvDet = T{1} / _Det;
 
         TMat Cof;
         Cof[0,0] = (*this)[1,1] * ((*this)[2,2] * (*this)[3,3] - (*this)[2,3] * (*this)[3,2])
@@ -429,7 +433,7 @@ public:
                  - (*this)[0,1] * ((*this)[1,0] * (*this)[2,2] - (*this)[1,2] * (*this)[2,0])
                  + (*this)[0,2] * ((*this)[1,0] * (*this)[2,1] - (*this)[1,1] * (*this)[2,0]);
 
-        return InvDet * Cof.Transpose();
+        return InvDet * Cof.Trans();
     }
 };
 
