@@ -11,7 +11,6 @@ namespace
 constexpr double PiValue = Roxy::Math::Pi<double>;
 constexpr double EValue  = Roxy::Math::E<double>;
 
-// Constexpr approximate comparison for compile-time checks
 template<typename T>
 constexpr bool AlmostEqual(T A, T B, T Epsilon = T(1e-9))
 {
@@ -79,7 +78,7 @@ TEST_CASE("Sqrt and InvSqrt")
     static_assert(Roxy::Math::InvSqrt(4.0) == 0.5);
 
     constexpr double SqrtInputs[] = {0.0, 1.0, 2.0, 3.0, 4.0, 9.0, 100.0};
-    constexpr auto SqrtResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto SqrtResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Sqrt(SqrtInputs[Is])... };
     }(std::make_index_sequence<std::size(SqrtInputs)>{});
 
@@ -105,15 +104,10 @@ TEST_CASE("Sqrt and InvSqrt")
 // ============================================================
 TEST_CASE("Trigonometric functions")
 {
-    // Exact zero cases (only where exact integer result is expected)
     static_assert(Roxy::Math::Sin(0.0) == 0.0);
     static_assert(Roxy::Math::Tan(0.0) == 0.0);
-
-    // Cos(0) is expected to be 1, but due to implementation it's slightly off.
-    // Use approximate comparison.
     static_assert(AlmostEqual(Roxy::Math::Cos(0.0), 1.0));
 
-    // Approximate cases using constexpr AlmostEqual
     static_assert(AlmostEqual(Roxy::Math::Sin(PiValue / 2), 1.0));
     static_assert(AlmostEqual(Roxy::Math::Sin(PiValue), 0.0));
     static_assert(AlmostEqual(Roxy::Math::Sin(-PiValue / 2), -1.0));
@@ -122,13 +116,13 @@ TEST_CASE("Trigonometric functions")
     static_assert(AlmostEqual(Roxy::Math::Tan(PiValue / 4), 1.0));
 
     constexpr double TrigInputs[] = {-10.0, -1.0, 0.0, 0.5, 1.0, 10.0};
-    constexpr auto SinResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto SinResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Sin(TrigInputs[Is])... };
     }(std::make_index_sequence<std::size(TrigInputs)>{});
-    constexpr auto CosResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto CosResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Cos(TrigInputs[Is])... };
     }(std::make_index_sequence<std::size(TrigInputs)>{});
-    constexpr auto TanResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto TanResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Tan(TrigInputs[Is])... };
     }(std::make_index_sequence<std::size(TrigInputs)>{});
 
@@ -170,14 +164,14 @@ TEST_CASE("Inverse trigonometric functions")
     static_assert(Roxy::Math::Atan2(-1.0, 0.0) == -PiValue / 2);
 
     constexpr double InvTrigInputs[] = {-1.0, -0.5, 0.0, 0.5, 1.0};
-    constexpr auto AsinResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto AsinResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Asin(InvTrigInputs[Is])... };
     }(std::make_index_sequence<std::size(InvTrigInputs)>{});
-    constexpr auto AcosResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto AcosResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Acos(InvTrigInputs[Is])... };
     }(std::make_index_sequence<std::size(InvTrigInputs)>{});
     constexpr double AtanInputs[] = {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0};
-    constexpr auto AtanResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto AtanResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Atan(AtanInputs[Is])... };
     }(std::make_index_sequence<std::size(AtanInputs)>{});
 
@@ -221,13 +215,13 @@ TEST_CASE("Hyperbolic functions")
     static_assert(Roxy::Math::Tanh(0.0) == 0.0);
 
     constexpr double HypInputs[] = {-2.0, -0.5, 0.0, 0.5, 2.0};
-    constexpr auto SinhResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto SinhResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Sinh(HypInputs[Is])... };
     }(std::make_index_sequence<std::size(HypInputs)>{});
-    constexpr auto CoshResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto CoshResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Cosh(HypInputs[Is])... };
     }(std::make_index_sequence<std::size(HypInputs)>{});
-    constexpr auto TanhResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto TanhResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Tanh(HypInputs[Is])... };
     }(std::make_index_sequence<std::size(HypInputs)>{});
 
@@ -260,7 +254,7 @@ TEST_CASE("Exp and Log")
     static_assert(Roxy::Math::Log10(1000.0) == 3.0);
 
     constexpr double ExpInputs[] = {-2.0, -1.0, 0.0, 0.5, 1.0, 2.0};
-    constexpr auto ExpResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto ExpResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Exp(ExpInputs[Is])... };
     }(std::make_index_sequence<std::size(ExpInputs)>{});
     for (std::size_t i = 0; i < std::size(ExpInputs); ++i) {
@@ -268,7 +262,7 @@ TEST_CASE("Exp and Log")
     }
 
     constexpr double LogInputs[] = {0.5, 1.0, 2.0, EValue, 10.0};
-    constexpr auto LogResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto LogResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Log(LogInputs[Is])... };
     }(std::make_index_sequence<std::size(LogInputs)>{});
     for (std::size_t i = 0; i < std::size(LogInputs); ++i) {
@@ -302,13 +296,12 @@ TEST_CASE("Pow")
     static_assert(Roxy::Math::Pow(2.0, -1) == 0.5);
     static_assert(Roxy::Math::Pow(3.0, 2) == 9.0);
 
-    // Floating exponent: compile-time approximate using constexpr constants
     static_assert(AlmostEqual(Roxy::Math::Pow(4.0, 0.5), 2.0));
     static_assert(AlmostEqual(Roxy::Math::Pow(2.0, 0.5), Roxy::Math::Sqrt2<double>));
 
     constexpr double BaseInt = 3.0;
     constexpr int IntExponents[] = {-2, -1, 0, 1, 2, 3};
-    constexpr auto PowIntResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto PowIntResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Pow(BaseInt, IntExponents[Is])... };
     }(std::make_index_sequence<std::size(IntExponents)>{});
     for (std::size_t i = 0; i < std::size(IntExponents); ++i) {
@@ -317,7 +310,7 @@ TEST_CASE("Pow")
 
     constexpr double BaseFloat = 4.0;
     constexpr double FloatExponents[] = {-1.0, -0.5, 0.0, 0.5, 1.0, 2.0};
-    constexpr auto PowFloatResults = []<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
+    constexpr auto PowFloatResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
         return std::array<double, sizeof...(Is)>{ Roxy::Math::Pow(BaseFloat, FloatExponents[Is])... };
     }(std::make_index_sequence<std::size(FloatExponents)>{});
     for (std::size_t i = 0; i < std::size(FloatExponents); ++i) {
@@ -337,11 +330,9 @@ TEST_CASE("Pow")
 
 // ============================================================
 // Utility functions (Min, Max, Clamp, Lerp, Fmod, Floor, Ceil, Round, Trunc, ToRadian, ToDegree)
-// All have compile-time implementations now, so we can test them both ways.
 // ============================================================
 TEST_CASE("Utility functions")
 {
-    // Compile-time exact checks
     static_assert(Roxy::Math::Min(3, 5) == 3);
     static_assert(Roxy::Math::Max(3, 5) == 5);
     static_assert(Roxy::Math::Clamp(7, 0, 10) == 7);
@@ -358,7 +349,6 @@ TEST_CASE("Utility functions")
     static_assert(Roxy::Math::ToRadian(180.0) == PiValue);
     static_assert(Roxy::Math::ToDegree(PiValue) == 180.0);
 
-    // Runtime checks
     CHECK(Roxy::Math::Min(3, 5) == 3);
     CHECK(Roxy::Math::Max(3, 5) == 5);
     CHECK(Roxy::Math::Clamp(7, 0, 10) == 7);
