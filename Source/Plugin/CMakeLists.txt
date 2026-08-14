@@ -1,3 +1,12 @@
+IF(ROXY_ENABLE_COVERAGE)
+    IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        ADD_COMPILE_OPTIONS(--coverage -O0 -g)
+        LINK_LIBRARIES(--coverage)
+    ELSE()
+        message(WARNING "Coverage only supported with GCC")
+    ENDIF()
+ENDIF()
+
 ADD_SUBDIRECTORY(RoxySTD)
 ADD_SUBDIRECTORY(RoxyFmt)
 ADD_SUBDIRECTORY(RoxyLog)

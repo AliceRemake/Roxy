@@ -1,0 +1,78 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            lcov \
+            libx11-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libgl1-mesa-dev
+
+      - name: Configure CMake with coverage
+        run: >
+          cmake -B ${{ github.workspace }}/build
+          -G "Ninja Multi-Config"
+          -DCMAKE_C_COMPILER=gcc
+          -DCMAKE_CXX_COMPILER=g++
+          -DCMAKE_BUILD_TYPE=Debug
+          -DROXY_BUILD_UNIT_TEST=ON
+          -DROXY_ENABLE_COVERAGE=ON
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build --config Debug
+
+      - name: Run all unit tests
+        working-directory: ${{ github.workspace }}/build
+        run: ctest -C Debug --output-on-failure
+
+      - name: Capture coverage data
+        run: |
+          lcov --capture \
+            --directory ${{ github.workspace }}/build \
+            --output-file coverage.info
+
+      - name: Filter out system and external code
+        run: |
+          lcov --remove coverage.info \
+            '/usr/*' \
+            '*/External/*' \
+            '*/doctest/*' \
+            '*/test/*' \
+            --output-file coverage_filtered.info
+
+      - name: Generate HTML report
+        run: |
+          genhtml coverage_filtered.info \
+            --output-directory coverage_report
+
+      - name: Upload HTML report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage_report
+
+      - name: Upload to Codecov (optional)
+        uses: getsentry/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage_filtered.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
