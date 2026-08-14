@@ -73,13 +73,13 @@ TEST_CASE("Trigonometric functions")
 
 TEST_CASE("Inverse trigonometric functions")
 {
-    for (double X : {-1.0, -0.5, 0.0, 0.5, 1.0})
+    for (constexpr double Values[] = {-1.0, -0.5, 0.0, 0.5, 1.0}; double X : Values)
     {
         CHECK(Roxy::Math::Asin(X) == doctest::Approx(std::asin(X)));
         CHECK(Roxy::Math::Acos(X) == doctest::Approx(std::acos(X)));
     }
 
-    for (double X : {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0})
+    for (constexpr double Values[] = {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0}; double X : Values)
     {
         CHECK(Roxy::Math::Atan(X) == doctest::Approx(std::atan(X)));
     }

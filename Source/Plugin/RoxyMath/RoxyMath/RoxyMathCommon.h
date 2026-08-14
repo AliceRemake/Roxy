@@ -444,7 +444,6 @@ ROXY_NODISCARD ROXY_INLINE constexpr T Log10(T X) noexcept
     return std::log10(X);
 }
 
-
 template<CFloatingPoint T, CIntegral U>
 ROXY_NODISCARD ROXY_INLINE constexpr T Pow(T Base, U Exponent) noexcept
 {
