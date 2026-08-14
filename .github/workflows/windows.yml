@@ -47,7 +47,7 @@ jobs:
           -G "Ninja Multi-Config"
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DROXY_BUILD_UNIT_TEST=ON
+          -DROXY_BUILD_TEST=ON
           -DCMAKE_CXX_STANDARD=23
           -S ${{ github.workspace }}
 
