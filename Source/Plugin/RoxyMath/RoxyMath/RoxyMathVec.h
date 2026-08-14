@@ -4,12 +4,12 @@
 
 namespace Roxy::Math
 {
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TVec;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TVec;
 
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TMatBase;
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TMat;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMatBase;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMat;
 
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4)
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4)
 class TVecBase
 {
 protected:
@@ -246,13 +246,13 @@ public:
         return Dot(static_cast<const FVec&>(*this), static_cast<const FVec&>(*this));
     }
 
-    ROXY_NODISCARD ROXY_INLINE constexpr T Len() const noexcept requires std::is_floating_point_v<T>
+    ROXY_NODISCARD ROXY_INLINE constexpr T Len() const noexcept
     {
         return static_cast<T>(Sqrt(SqrLen()));
     }
 };
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr T Dot(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     T Result = 0;
@@ -262,7 +262,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr T Dot(const TVec<T, Dim>& Lhs, const TVec<T
     return Result;
 }
 
-template <typename T, FIndex Dim> requires (Dim == 3)
+template <CFloatingPoint T, FIndex Dim> requires (Dim == 3)
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> Cross(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     return TVec<T, Dim>
@@ -273,13 +273,13 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> Cross(const TVec<T, Dim>& Lhs,
     };
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(const TVec<T, Dim>& Vec) noexcept
 {
     return Vec;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& Vec) noexcept
 {
     if constexpr (Dim == 2)
@@ -296,7 +296,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     if constexpr (Dim == 2)
@@ -313,7 +313,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     if constexpr (Dim == 2)
@@ -330,7 +330,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     if constexpr (Dim == 2)
@@ -347,7 +347,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(const TVec<T, Dim>& Lhs, const TVec<T, Dim>& Rhs) noexcept
 {
     if constexpr (Dim == 2)
@@ -364,7 +364,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(const TVec<T, Dim>& Vec, T scalar) noexcept
 {
     if constexpr (Dim == 2)
@@ -381,7 +381,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& Vec, T scalar) noexcept
 {
     if constexpr (Dim == 2)
@@ -398,7 +398,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TVec<T, Dim>& Vec, T scalar) noexcept
 {
     if constexpr (Dim == 2)
@@ -415,7 +415,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(const TVec<T, Dim>& Vec, T scalar) noexcept
 {
     if constexpr (Dim == 2)
@@ -432,13 +432,13 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(const TVec<T, Dim>& 
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator+(T scalar, const TVec<T, Dim>& Vec) noexcept
 {
     return Vec + scalar;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(T scalar, const TVec<T, Dim>& Vec) noexcept
 {
     if constexpr (Dim == 2)
@@ -455,13 +455,13 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator-(T scalar, const TVec
     }
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(T scalar, const TVec<T, Dim>& Vec) noexcept
 {
     return Vec * scalar;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(T scalar, const TVec<T, Dim>& Vec) noexcept
 {
     if constexpr (Dim == 2)
@@ -478,7 +478,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(T scalar, const TVec
     }
 }
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TVec<T, 2> : public TVecBase<T, 2>
 {
 public:
@@ -495,7 +495,7 @@ public:
     ROXY_NODISCARD ROXY_INLINE constexpr const T& Y() const noexcept { return this->Payload[1]; }
 };
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TVec<T, 3> : public TVecBase<T, 3>
 {
 public:
@@ -515,7 +515,7 @@ public:
     ROXY_NODISCARD ROXY_INLINE constexpr const T& Z() const noexcept { return this->Payload[2]; }
 };
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TVec<T, 4> : public TVecBase<T, 4>
 {
 public:

@@ -380,8 +380,8 @@ TEST_CASE("TVec construction and indexing")
     static_assert(v_default[0] == 0.0f && v_default[1] == 0.0f && v_default[2] == 0.0f);
 
     // initializer_list constructor
-    constexpr TVec<int, 2> v2{1, 2};
-    static_assert(v2[0] == 1 && v2[1] == 2);
+    constexpr TVec<double, 2> v2{1.0, 2.0};
+    static_assert(AlmostEqual(v2[0], 1.0) && AlmostEqual(v2[1], 2.0));
 
     constexpr TVec<float, 4> v4{1.0f, 2.0f, 3.0f, 4.0f};
     static_assert(v4[0] == 1.0f && v4[1] == 2.0f && v4[2] == 3.0f && v4[3] == 4.0f);
@@ -410,8 +410,8 @@ TEST_CASE("TVec static factory functions")
     constexpr TVec<float, 3> zero = TVec<float, 3>::Zero();
     static_assert(zero[0] == 0.0f && zero[1] == 0.0f && zero[2] == 0.0f);
 
-    constexpr TVec<int, 2> one = TVec<int, 2>::One();
-    static_assert(one[0] == 1 && one[1] == 1);
+    constexpr TVec<double, 2> one = TVec<double, 2>::One();
+    static_assert(AlmostEqual(one[0], 1.0) && AlmostEqual(one[1], 1.0));
 
     constexpr TVec<float, 4> axis_x = TVec<float, 4>::AxisX();
     static_assert(axis_x[0] == 1.0f && axis_x[1] == 0.0f && axis_x[2] == 0.0f && axis_x[3] == 0.0f);
@@ -427,9 +427,9 @@ TEST_CASE("TVec comparison operators")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> a{1, 2, 3};
-    constexpr TVec<int, 3> b{1, 2, 3};
-    constexpr TVec<int, 3> c{1, 2, 4};
+    constexpr TVec<double, 3> a{1.0, 2.0, 3.0};
+    constexpr TVec<double, 3> b{1.0, 2.0, 3.0};
+    constexpr TVec<double, 3> c{1.0, 2.0, 4.0};
 
     static_assert(a == b);
     static_assert(a != c);
@@ -440,55 +440,55 @@ TEST_CASE("TVec arithmetic operators (vector-vector)")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 2> v1{1, 2};
-    constexpr TVec<int, 2> v2{3, 4};
+    constexpr TVec<double, 2> v1{1.0, 2.0};
+    constexpr TVec<double, 2> v2{3.0, 4.0};
 
     constexpr auto add = v1 + v2;
-    static_assert(add[0] == 4 && add[1] == 6);
+    static_assert(AlmostEqual(add[0], 4.0) && AlmostEqual(add[1], 6.0));
 
     constexpr auto sub = v2 - v1;
-    static_assert(sub[0] == 2 && sub[1] == 2);
+    static_assert(AlmostEqual(sub[0], 2.0) && AlmostEqual(sub[1], 2.0));
 
     constexpr auto mul = v1 * v2;
-    static_assert(mul[0] == 3 && mul[1] == 8);
+    static_assert(AlmostEqual(mul[0], 3.0) && AlmostEqual(mul[1], 8.0));
 
     constexpr auto div = v2 / v1;
-    static_assert(div[0] == 3 && div[1] == 2);
+    static_assert(AlmostEqual(div[0], 3.0) && AlmostEqual(div[1], 2.0));
 
     // Unary minus
     constexpr auto neg = -v1;
-    static_assert(neg[0] == -1 && neg[1] == -2);
+    static_assert(AlmostEqual(neg[0], -1.0) && AlmostEqual(neg[1], -2.0));
 }
 
 TEST_CASE("TVec arithmetic operators (vector-scalar and scalar-vector)")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> v{1, 2, 3};
+    constexpr TVec<double, 3> v{1.0, 2.0, 3.0};
 
-    constexpr auto v_plus_s = v + 10;
-    static_assert(v_plus_s[0] == 11 && v_plus_s[1] == 12 && v_plus_s[2] == 13);
+    constexpr auto v_plus_s = v + 10.0;
+    static_assert(AlmostEqual(v_plus_s[0], 11.0) && AlmostEqual(v_plus_s[1], 12.0) && AlmostEqual(v_plus_s[2], 13.0));
 
-    constexpr auto s_plus_v = 10 + v;
-    static_assert(s_plus_v[0] == 11 && s_plus_v[1] == 12 && s_plus_v[2] == 13);
+    constexpr auto s_plus_v = 10.0 + v;
+    static_assert(AlmostEqual(s_plus_v[0], 11.0) && AlmostEqual(s_plus_v[1], 12.0) && AlmostEqual(s_plus_v[2], 13.0));
 
-    constexpr auto v_minus_s = v - 1;
-    static_assert(v_minus_s[0] == 0 && v_minus_s[1] == 1 && v_minus_s[2] == 2);
+    constexpr auto v_minus_s = v - 1.0;
+    static_assert(AlmostEqual(v_minus_s[0], 0.0) && AlmostEqual(v_minus_s[1], 1.0) && AlmostEqual(v_minus_s[2], 2.0));
 
-    constexpr auto s_minus_v = 5 - v;
-    static_assert(s_minus_v[0] == 4 && s_minus_v[1] == 3 && s_minus_v[2] == 2);
+    constexpr auto s_minus_v = 5.0 - v;
+    static_assert(AlmostEqual(s_minus_v[0], 4.0) && AlmostEqual(s_minus_v[1], 3.0) && AlmostEqual(s_minus_v[2], 2.0));
 
-    constexpr auto v_mul_s = v * 2;
-    static_assert(v_mul_s[0] == 2 && v_mul_s[1] == 4 && v_mul_s[2] == 6);
+    constexpr auto v_mul_s = v * 2.0;
+    static_assert(AlmostEqual(v_mul_s[0], 2.0) && AlmostEqual(v_mul_s[1], 4.0) && AlmostEqual(v_mul_s[2], 6.0));
 
-    constexpr auto s_mul_v = 2 * v;
-    static_assert(s_mul_v[0] == 2 && s_mul_v[1] == 4 && s_mul_v[2] == 6);
+    constexpr auto s_mul_v = 2.0 * v;
+    static_assert(AlmostEqual(s_mul_v[0], 2.0) && AlmostEqual(s_mul_v[1], 4.0) && AlmostEqual(s_mul_v[2], 6.0));
 
-    constexpr auto v_div_s = v / 2;
-    static_assert(v_div_s[0] == 0 && v_div_s[1] == 1 && v_div_s[2] == 1); // integer division
+    constexpr auto v_div_s = v / 2.0;
+    static_assert(AlmostEqual(v_div_s[0], 0.5) && AlmostEqual(v_div_s[1], 1.0) && AlmostEqual(v_div_s[2], 1.5));
 
-    constexpr auto s_div_v = 6 / v;
-    static_assert(s_div_v[0] == 6 && s_div_v[1] == 3 && s_div_v[2] == 2);
+    constexpr auto s_div_v = 6.0 / v;
+    static_assert(AlmostEqual(s_div_v[0], 6.0) && AlmostEqual(s_div_v[1], 3.0) && AlmostEqual(s_div_v[2], 2.0));
 }
 
 TEST_CASE("TVec compound assignment operators")
@@ -543,9 +543,9 @@ TEST_CASE("TVec Dot product")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> a{1, 2, 3};
-    constexpr TVec<int, 3> b{4, 5, 6};
-    static_assert(Dot(a, b) == 32);
+    constexpr TVec<double, 3> a{1.0, 2.0, 3.0};
+    constexpr TVec<double, 3> b{4.0, 5.0, 6.0};
+    static_assert(AlmostEqual(Dot(a, b), 32.0));
 
     constexpr TVec<double, 2> c{1.5, 2.5};
     constexpr TVec<double, 2> d{3.0, 4.0};
@@ -560,13 +560,13 @@ TEST_CASE("TVec Cross product (3D only)")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> x{1, 0, 0};
-    constexpr TVec<int, 3> y{0, 1, 0};
+    constexpr TVec<double, 3> x{1.0, 0.0, 0.0};
+    constexpr TVec<double, 3> y{0.0, 1.0, 0.0};
     constexpr auto z = Cross(x, y);
-    static_assert(z[0] == 0 && z[1] == 0 && z[2] == 1);
+    static_assert(AlmostEqual(z[0], 0.0) && AlmostEqual(z[1], 0.0) && AlmostEqual(z[2], 1.0));
 
     constexpr auto z2 = Cross(y, x);
-    static_assert(z2[0] == 0 && z2[1] == 0 && z2[2] == -1);
+    static_assert(AlmostEqual(z2[0], 0.0) && AlmostEqual(z2[1], 0.0) && AlmostEqual(z2[2], -1.0));
 
     // Member version
     TVec<double, 3> a{2.0, 3.0, 4.0};
@@ -594,7 +594,7 @@ TEST_CASE("TVec As<U> conversion")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> vi{1, 2, 3};
+    constexpr TVec<double, 3> vi{1.0, 2.0, 3.0};
     constexpr auto vf = vi.As<float>();
     static_assert(std::is_same_v<decltype(vf), const TVec<float, 3>>);
     static_assert(AlmostEqual(vf[0], 1.0f));
@@ -606,9 +606,9 @@ TEST_CASE("TVec Min and Max")
 {
     using namespace Roxy::Math;
 
-    constexpr TVec<int, 3> v{5, 2, 8};
-    static_assert(v.Min() == 2);
-    static_assert(v.Max() == 8);
+    constexpr TVec<double, 3> v{5.0, 2.0, 8.0};
+    static_assert(AlmostEqual(v.Min(), 2.0));
+    static_assert(AlmostEqual(v.Max(), 8.0));
 
     constexpr TVec<double, 2> w{-1.5, 3.5};
     static_assert(AlmostEqual(w.Min(), -1.5));
@@ -630,14 +630,14 @@ TEST_CASE("TMat construction and indexing")
     static_assert(m_default[2][0] == 0.0f && m_default[2][1] == 0.0f && m_default[2][2] == 0.0f);
 
     // Scalar constructor -> identity * scalar
-    constexpr TMat<int, 2> m_ident(1);
-    static_assert(m_ident[0][0] == 1 && m_ident[0][1] == 0);
-    static_assert(m_ident[1][0] == 0 && m_ident[1][1] == 1);
+    constexpr TMat<double, 2> m_ident(1.0);
+    static_assert(AlmostEqual(m_ident[0][0], 1.0) && AlmostEqual(m_ident[0][1], 0.0));
+    static_assert(AlmostEqual(m_ident[1][0], 0.0) && AlmostEqual(m_ident[1][1], 1.0));
 
     // initializer_list<T> constructor (row-major)
-    constexpr TMat<int, 2> m2{1, 2, 3, 4};
-    static_assert(m2[0][0] == 1 && m2[0][1] == 2);
-    static_assert(m2[1][0] == 3 && m2[1][1] == 4);
+    constexpr TMat<double, 2> m2{1.0, 2.0, 3.0, 4.0};
+    static_assert(AlmostEqual(m2[0][0], 1.0) && AlmostEqual(m2[0][1], 2.0));
+    static_assert(AlmostEqual(m2[1][0], 3.0) && AlmostEqual(m2[1][1], 4.0));
 
     constexpr TMat<float, 3> m3{1.0f, 2.0f, 3.0f,
                                 4.0f, 5.0f, 6.0f,
@@ -647,9 +647,9 @@ TEST_CASE("TMat construction and indexing")
     static_assert(AlmostEqual(m3[2][0], 7.0f) && AlmostEqual(m3[2][1], 8.0f) && AlmostEqual(m3[2][2], 9.0f));
 
     // initializer_list<TVec<T,Dim>> constructor (rows as vectors)
-    constexpr TVec<int, 2> row0{1, 2};
-    constexpr TVec<int, 2> row1{3, 4};
-    constexpr TMat<int, 2> m_rows{row0, row1};
+    constexpr TVec<double, 2> row0{1.0, 2.0};
+    constexpr TVec<double, 2> row1{3.0, 4.0};
+    constexpr TMat<double, 2> m_rows{row0, row1};
     static_assert(m_rows[0] == row0 && m_rows[1] == row1);
 }
 
@@ -672,9 +672,9 @@ TEST_CASE("TMat comparison operators")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> a{1, 2, 3, 4};
-    constexpr TMat<int, 2> b{1, 2, 3, 4};
-    constexpr TMat<int, 2> c{1, 2, 3, 5};
+    constexpr TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
+    constexpr TMat<double, 2> b{1.0, 2.0, 3.0, 4.0};
+    constexpr TMat<double, 2> c{1.0, 2.0, 3.0, 5.0};
 
     static_assert(a == b);
     static_assert(a != c);
@@ -685,103 +685,102 @@ TEST_CASE("TMat Row and Col access")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> m{1, 2, 3, 4};
+    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
     constexpr auto row0 = m.Row(0);
     constexpr auto row1 = m.Row(1);
-    static_assert(row0[0] == 1 && row0[1] == 2);
-    static_assert(row1[0] == 3 && row1[1] == 4);
+    static_assert(AlmostEqual(row0[0], 1.0) && AlmostEqual(row0[1], 2.0));
+    static_assert(AlmostEqual(row1[0], 3.0) && AlmostEqual(row1[1], 4.0));
 
     constexpr auto col0 = m.Col(0);
     constexpr auto col1 = m.Col(1);
-    static_assert(col0[0] == 1 && col0[1] == 3);
-    static_assert(col1[0] == 2 && col1[1] == 4);
+    static_assert(AlmostEqual(col0[0], 1.0) && AlmostEqual(col0[1], 3.0));
+    static_assert(AlmostEqual(col1[0], 2.0) && AlmostEqual(col1[1], 4.0));
 }
 
 TEST_CASE("TMat arithmetic operators (matrix-matrix)")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> a{1, 2, 3, 4};
-    constexpr TMat<int, 2> b{5, 6, 7, 8};
+    constexpr TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
+    constexpr TMat<double, 2> b{5.0, 6.0, 7.0, 8.0};
 
     constexpr auto add = a + b;
-    static_assert(add[0][0] == 6 && add[0][1] == 8);
-    static_assert(add[1][0] == 10 && add[1][1] == 12);
+    static_assert(AlmostEqual(add[0][0], 6.0) && AlmostEqual(add[0][1], 8.0));
+    static_assert(AlmostEqual(add[1][0], 10.0) && AlmostEqual(add[1][1], 12.0));
 
     constexpr auto sub = b - a;
-    static_assert(sub[0][0] == 4 && sub[0][1] == 4);
-    static_assert(sub[1][0] == 4 && sub[1][1] == 4);
+    static_assert(AlmostEqual(sub[0][0], 4.0) && AlmostEqual(sub[0][1], 4.0));
+    static_assert(AlmostEqual(sub[1][0], 4.0) && AlmostEqual(sub[1][1], 4.0));
 
-    // Matrix multiplication (requires corrected Dot in implementation)
-    // Assuming fix: R[Row][Col] = Dot(Lhs[Row], Rhs.Col(Col));
+    // Matrix multiplication
     constexpr auto mul = a * b;
-    static_assert(mul[0][0] == 19 && mul[0][1] == 22);
-    static_assert(mul[1][0] == 43 && mul[1][1] == 50);
+    static_assert(AlmostEqual(mul[0][0], 19.0) && AlmostEqual(mul[0][1], 22.0));
+    static_assert(AlmostEqual(mul[1][0], 43.0) && AlmostEqual(mul[1][1], 50.0));
 
     // Unary minus
     constexpr auto neg = -a;
-    static_assert(neg[0][0] == -1 && neg[0][1] == -2);
-    static_assert(neg[1][0] == -3 && neg[1][1] == -4);
+    static_assert(AlmostEqual(neg[0][0], -1.0) && AlmostEqual(neg[0][1], -2.0));
+    static_assert(AlmostEqual(neg[1][0], -3.0) && AlmostEqual(neg[1][1], -4.0));
 }
 
 TEST_CASE("TMat arithmetic operators (matrix-scalar and scalar-matrix)")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> m{1, 2, 3, 4};
+    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
 
-    constexpr auto m_plus_s = m + 10;
-    static_assert(m_plus_s[0][0] == 11 && m_plus_s[0][1] == 12);
-    static_assert(m_plus_s[1][0] == 13 && m_plus_s[1][1] == 14);
+    constexpr auto m_plus_s = m + 10.0;
+    static_assert(AlmostEqual(m_plus_s[0][0], 11.0) && AlmostEqual(m_plus_s[0][1], 12.0));
+    static_assert(AlmostEqual(m_plus_s[1][0], 13.0) && AlmostEqual(m_plus_s[1][1], 14.0));
 
-    constexpr auto s_plus_m = 10 + m;
-    static_assert(s_plus_m[0][0] == 11 && s_plus_m[0][1] == 12);
-    static_assert(s_plus_m[1][0] == 13 && s_plus_m[1][1] == 14);
+    constexpr auto s_plus_m = 10.0 + m;
+    static_assert(AlmostEqual(s_plus_m[0][0], 11.0) && AlmostEqual(s_plus_m[0][1], 12.0));
+    static_assert(AlmostEqual(s_plus_m[1][0], 13.0) && AlmostEqual(s_plus_m[1][1], 14.0));
 
-    constexpr auto m_minus_s = m - 1;
-    static_assert(m_minus_s[0][0] == 0 && m_minus_s[0][1] == 1);
-    static_assert(m_minus_s[1][0] == 2 && m_minus_s[1][1] == 3);
+    constexpr auto m_minus_s = m - 1.0;
+    static_assert(AlmostEqual(m_minus_s[0][0], 0.0) && AlmostEqual(m_minus_s[0][1], 1.0));
+    static_assert(AlmostEqual(m_minus_s[1][0], 2.0) && AlmostEqual(m_minus_s[1][1], 3.0));
 
-    constexpr auto s_minus_m = 5 - m;
-    static_assert(s_minus_m[0][0] == 4 && s_minus_m[0][1] == 3);
-    static_assert(s_minus_m[1][0] == 2 && s_minus_m[1][1] == 1);
+    constexpr auto s_minus_m = 5.0 - m;
+    static_assert(AlmostEqual(s_minus_m[0][0], 4.0) && AlmostEqual(s_minus_m[0][1], 3.0));
+    static_assert(AlmostEqual(s_minus_m[1][0], 2.0) && AlmostEqual(s_minus_m[1][1], 1.0));
 
-    constexpr auto m_mul_s = m * 2;
-    static_assert(m_mul_s[0][0] == 2 && m_mul_s[0][1] == 4);
-    static_assert(m_mul_s[1][0] == 6 && m_mul_s[1][1] == 8);
+    constexpr auto m_mul_s = m * 2.0;
+    static_assert(AlmostEqual(m_mul_s[0][0], 2.0) && AlmostEqual(m_mul_s[0][1], 4.0));
+    static_assert(AlmostEqual(m_mul_s[1][0], 6.0) && AlmostEqual(m_mul_s[1][1], 8.0));
 
-    constexpr auto s_mul_m = 2 * m;
-    static_assert(s_mul_m[0][0] == 2 && s_mul_m[0][1] == 4);
-    static_assert(s_mul_m[1][0] == 6 && s_mul_m[1][1] == 8);
+    constexpr auto s_mul_m = 2.0 * m;
+    static_assert(AlmostEqual(s_mul_m[0][0], 2.0) && AlmostEqual(s_mul_m[0][1], 4.0));
+    static_assert(AlmostEqual(s_mul_m[1][0], 6.0) && AlmostEqual(s_mul_m[1][1], 8.0));
 
-    constexpr auto m_div_s = m / 2;
-    static_assert(m_div_s[0][0] == 0 && m_div_s[0][1] == 1);
-    static_assert(m_div_s[1][0] == 1 && m_div_s[1][1] == 2);
+    constexpr auto m_div_s = m / 2.0;
+    static_assert(AlmostEqual(m_div_s[0][0], 0.5) && AlmostEqual(m_div_s[0][1], 1.0));
+    static_assert(AlmostEqual(m_div_s[1][0], 1.5) && AlmostEqual(m_div_s[1][1], 2.0));
 
-    constexpr auto s_div_m = 10 / m;
-    static_assert(s_div_m[0][0] == 10 && s_div_m[0][1] == 5);
-    static_assert(s_div_m[1][0] == 3 && s_div_m[1][1] == 2); // integer division truncates
+    constexpr auto s_div_m = 10.0 / m;
+    static_assert(AlmostEqual(s_div_m[0][0], 10.0) && AlmostEqual(s_div_m[0][1], 5.0));
+    static_assert(AlmostEqual(s_div_m[1][0], 10.0/3.0) && AlmostEqual(s_div_m[1][1], 2.5));
 }
 
 TEST_CASE("TMat vector multiplication")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> m{1, 2, 3, 4};
-    constexpr TVec<int, 2> v{5, 6};
+    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
+    constexpr TVec<double, 2> v{5.0, 6.0};
 
     constexpr auto res = m * v;
-    static_assert(res[0] == 17 && res[1] == 39);
+    static_assert(AlmostEqual(res[0], 17.0) && AlmostEqual(res[1], 39.0));
 }
 
 TEST_CASE("TMat transpose")
 {
     using namespace Roxy::Math;
 
-    constexpr TMat<int, 2> m{1, 2, 3, 4};
+    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
     constexpr auto t = m.Transpose();
-    static_assert(t[0][0] == 1 && t[0][1] == 3);
-    static_assert(t[1][0] == 2 && t[1][1] == 4);
+    static_assert(AlmostEqual(t[0][0], 1.0) && AlmostEqual(t[0][1], 3.0));
+    static_assert(AlmostEqual(t[1][0], 2.0) && AlmostEqual(t[1][1], 4.0));
 
     constexpr TMat<float, 3> m3{1.0f, 2.0f, 3.0f,
                                 4.0f, 5.0f, 6.0f,
@@ -975,7 +974,7 @@ TEST_CASE("TMat runtime operations for coverage")
                           5.0, 6.0, 0.0};
 
         auto det = a.Determinant();
-        CHECK(det == doctest::Approx(1.0));  // actually det = 1*(1*0 - 4*6) - 2*(0*0 - 4*5) + 3*(0*6 - 1*5) = -24 + 40 -15 = 1
+        CHECK(det == doctest::Approx(1.0));  // det = 1
 
         auto inv = a.Inverse();
         auto prod = a * inv;
@@ -1016,24 +1015,24 @@ TEST_CASE("TMat runtime operations for coverage")
         CHECK(res[1] == doctest::Approx(39.0));
     }
 
-    // Scalar operations
+    // Scalar operations (now using double)
     {
-        TMat<int, 2> m{1, 2, 3, 4};
+        TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
 
-        auto add = m + 10;
-        CHECK(add[0][0] == 11);
-        CHECK(add[1][1] == 14);
+        auto add = m + 10.0;
+        CHECK(add[0][0] == doctest::Approx(11.0));
+        CHECK(add[1][1] == doctest::Approx(14.0));
 
-        auto sub = 10 - m;
-        CHECK(sub[0][0] == 9);
-        CHECK(sub[1][1] == 6);
+        auto sub = 10.0 - m;
+        CHECK(sub[0][0] == doctest::Approx(9.0));
+        CHECK(sub[1][1] == doctest::Approx(6.0));
 
-        auto mul = m * 3;
-        CHECK(mul[0][0] == 3);
-        CHECK(mul[1][1] == 12);
+        auto mul = m * 3.0;
+        CHECK(mul[0][0] == doctest::Approx(3.0));
+        CHECK(mul[1][1] == doctest::Approx(12.0));
 
-        auto div = m / 2;
-        CHECK(div[0][0] == 0);
-        CHECK(div[1][1] == 2);
+        auto div = m / 2.0;
+        CHECK(div[0][0] == doctest::Approx(0.5));
+        CHECK(div[1][1] == doctest::Approx(2.0));
     }
 }

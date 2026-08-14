@@ -4,9 +4,9 @@
 
 namespace Roxy::Math
 {
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TMat;
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4) class TMat;
 
-template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4)
+template <CFloatingPoint T, FIndex Dim> requires (2 <= Dim && Dim <= 4)
 class TMatBase
 {
 protected:
@@ -133,13 +133,13 @@ public:
     }
 };
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(const TMat<T, Dim>& Mat) noexcept
 {
     return Mat;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& Mat) noexcept
 {
     TMat<T, Dim> R;
@@ -150,7 +150,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(const TMat<T, Dim>& Lhs, const TMat<T, Dim>& Rhs) noexcept
 {
     TMat<T, Dim> R;
@@ -161,7 +161,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& Lhs, const TMat<T, Dim>& Rhs) noexcept
 {
     TMat<T, Dim> R;
@@ -172,7 +172,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(const TMat<T, Dim>& Lhs, const TMat<T, Dim>& Rhs) noexcept
 {
     TMat<T, Dim> R;
@@ -180,13 +180,16 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(const TMat<T, Dim>& 
     {
         for (FIndex Col = 0; Col < Dim; ++Col)
         {
-            R[Row][Col] = Dot(Lhs[Row], (Rhs.Col(Col)));
+            for (FIndex I = 0; I < Dim; ++I)
+            {
+                R[Row][Col] += Lhs[Row][I] * Rhs[I][Col];
+            }
         }
     }
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TMat<T, Dim>& Mat, const TVec<T, Dim>& Vec) noexcept
 {
     TVec<T, Dim> R;
@@ -197,7 +200,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator*(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(const TMat<T, Dim>& Mat, T Scalar) noexcept
 {
     TMat<T, Dim> R;
@@ -208,7 +211,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(T Scalar, const TMat<T, Dim>& Mat) noexcept
 {
     TMat<T, Dim> R;
@@ -219,7 +222,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator+(T Scalar, const TMat
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& Mat, T Scalar) noexcept
 {
     TMat<T, Dim> R;
@@ -230,7 +233,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(T Scalar, const TMat<T, Dim>& Mat) noexcept
 {
     TMat<T, Dim> R;
@@ -241,7 +244,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator-(T Scalar, const TMat
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(const TMat<T, Dim>& Mat, T Scalar) noexcept
 {
     TMat<T, Dim> R;
@@ -252,7 +255,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(T Scalar, const TMat<T, Dim>& Mat) noexcept
 {
     TMat<T, Dim> R;
@@ -263,7 +266,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator*(T Scalar, const TMat
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator/(const TMat<T, Dim>& Mat, T Scalar) noexcept
 {
     TMat<T, Dim> R;
@@ -274,7 +277,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator/(const TMat<T, Dim>& 
     return R;
 }
 
-template <typename T, FIndex Dim>
+template <CFloatingPoint T, FIndex Dim>
 ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator/(T Scalar, const TMat<T, Dim>& Mat) noexcept
 {
     TMat<T, Dim> R;
@@ -285,7 +288,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator/(T Scalar, const TMat
     return R;
 }
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TMat<T, 2> : public TMatBase<T, 2>
 {
 public:
@@ -312,7 +315,7 @@ public:
     }
 };
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TMat<T, 3> : public TMatBase<T, 3>
 {
 public:
@@ -350,7 +353,7 @@ public:
     }
 };
 
-template <typename T> requires std::is_arithmetic_v<T>
+template <CFloatingPoint T> requires std::is_arithmetic_v<T>
 class TMat<T, 4> : public TMatBase<T, 4>
 {
 public:
