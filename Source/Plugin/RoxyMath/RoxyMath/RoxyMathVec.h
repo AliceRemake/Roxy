@@ -486,13 +486,13 @@ public:
     friend class TMatBase<T, 2>;
     using TVecBase<T, 2>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<T, 2>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<T, 2>::Axis(1); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisX() noexcept { return TVecBase<T, 2>::Axis(0); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisY() noexcept { return TVecBase<T, 2>::Axis(1); }
 
-    ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE T& Y() noexcept { return this->Payload[1]; }
-    ROXY_NODISCARD ROXY_INLINE const T& Y() const noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& X() noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& X() const noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& Y() noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& Y() const noexcept { return this->Payload[1]; }
 };
 
 template <typename T> requires std::is_arithmetic_v<T>
@@ -503,21 +503,16 @@ public:
     friend class TMatBase<T, 3>;
     using TVecBase<T, 3>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<T, 3>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<T, 3>::Axis(1); }
-    static constexpr TVec AxisZ() noexcept { return TVecBase<T, 3>::Axis(2); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisX() noexcept { return TVecBase<T, 3>::Axis(0); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisY() noexcept { return TVecBase<T, 3>::Axis(1); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisZ() noexcept { return TVecBase<T, 3>::Axis(2); }
 
-    ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE T& Y() noexcept { return this->Payload[1]; }
-    ROXY_NODISCARD ROXY_INLINE const T& Y() const noexcept { return this->Payload[1]; }
-    ROXY_NODISCARD ROXY_INLINE T& Z() noexcept { return this->Payload[2]; }
-    ROXY_NODISCARD ROXY_INLINE const T& Z() const noexcept { return this->Payload[2]; }
-
-    ROXY_NODISCARD ROXY_INLINE constexpr TVec Cross(const TVec& Oth) const noexcept
-    {
-        return Math::Cross(*this, Oth);
-    }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& X() noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& X() const noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& Y() noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& Y() const noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& Z() noexcept { return this->Payload[2]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& Z() const noexcept { return this->Payload[2]; }
 };
 
 template <typename T> requires std::is_arithmetic_v<T>
@@ -528,75 +523,19 @@ public:
     friend class TMatBase<T, 4>;
     using TVecBase<T, 4>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<T, 4>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<T, 4>::Axis(1); }
-    static constexpr TVec AxisZ() noexcept { return TVecBase<T, 4>::Axis(2); }
-    static constexpr TVec AxisW() noexcept { return TVecBase<T, 4>::Axis(3); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisX() noexcept { return TVecBase<T, 4>::Axis(0); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisY() noexcept { return TVecBase<T, 4>::Axis(1); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisZ() noexcept { return TVecBase<T, 4>::Axis(2); }
+    ROXY_NODISCARD ROXY_INLINE static constexpr TVec AxisW() noexcept { return TVecBase<T, 4>::Axis(3); }
 
-    ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
-    ROXY_NODISCARD ROXY_INLINE T& Y() noexcept { return this->Payload[1]; }
-    ROXY_NODISCARD ROXY_INLINE const T& Y() const noexcept { return this->Payload[1]; }
-    ROXY_NODISCARD ROXY_INLINE T& Z() noexcept { return this->Payload[2]; }
-    ROXY_NODISCARD ROXY_INLINE const T& Z() const noexcept { return this->Payload[2]; }
-    ROXY_NODISCARD ROXY_INLINE T& W() noexcept { return this->Payload[3]; }
-    ROXY_NODISCARD ROXY_INLINE const T& W() const noexcept { return this->Payload[3]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& X() noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& X() const noexcept { return this->Payload[0]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& Y() noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& Y() const noexcept { return this->Payload[1]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& Z() noexcept { return this->Payload[2]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& Z() const noexcept { return this->Payload[2]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr T& W() noexcept { return this->Payload[3]; }
+    ROXY_NODISCARD ROXY_INLINE constexpr const T& W() const noexcept { return this->Payload[3]; }
 };
 
 }
-
-
-// ROXY_NODISCARD ROXY_INLINE constexpr T Dot(const FVec& Oth) const noexcept
-// {
-//     return Math::Dot(static_cast<const FVec&>(*this), Oth);
-// }
-// ROXY_NODISCARD ROXY_INLINE constexpr FVec Abs() const noexcept
-// {
-//     if constexpr (Dim == 2)
-//     {
-//         return FVec{ std::abs(Payload[0]), std::abs(Payload[1]) };
-//     }
-//     else if constexpr (Dim == 3)
-//     {
-//         return FVec{ std::abs(Payload[0]), std::abs(Payload[1]), std::abs(Payload[2]) };
-//     }
-//     else
-//     {
-//         static_assert(Dim == 4 && "Vec Dim Out Of Bound");
-//         return FVec{ std::abs(Payload[0]), std::abs(Payload[1]), std::abs(Payload[2]), std::abs(Payload[3]) };
-//     }
-// }
-// ROXY_NODISCARD ROXY_INLINE constexpr FVec Clamped(T InMin, T InMax) const noexcept
-// {
-//     if constexpr (Dim == 2)
-//     {
-//         return FVec{ std::clamp(Payload[0], InMin, InMax), std::clamp(Payload[1], InMin, InMax) };
-//     }
-//     else if constexpr (Dim == 3)
-//     {
-//         return FVec{ std::clamp(Payload[0], InMin, InMax), std::clamp(Payload[1], InMin, InMax), std::clamp(Payload[2], InMin, InMax) };
-//     }
-//     else
-//     {
-//         static_assert(Dim == 4);
-//         return FVec{ std::clamp(Payload[0], InMin, InMax), std::clamp(Payload[1], InMin, InMax), std::clamp(Payload[2], InMin, InMax), std::clamp(Payload[3], InMin, InMax) };
-//     }
-// }
-// ROXY_INLINE constexpr void Clamp(T InMin, T InMax) noexcept
-// {
-//     if constexpr (Dim >= 1) { Payload[0] = std::clamp(Payload[0], InMin, InMax); }
-//     if constexpr (Dim >= 2) { Payload[1] = std::clamp(Payload[1], InMin, InMax); }
-//     if constexpr (Dim >= 3) { Payload[2] = std::clamp(Payload[2], InMin, InMax); }
-//     if constexpr (Dim >= 4) { Payload[3] = std::clamp(Payload[3], InMin, InMax); }
-// }
-// ROXY_NODISCARD ROXY_INLINE FVec Normalized() const noexcept requires std::is_floating_point_v<T>
-// {
-//     const auto InvLen = InvSqrt(SqrLen());
-//     return static_cast<const FVec&>(*this) * InvLen;
-// }
-//
-// ROXY_INLINE void Normalize() noexcept requires std::is_floating_point_v<T>
-// {
-//     const auto InvLen = InvSqrt(SqrLen());
-//     *this *= InvLen;
-// }

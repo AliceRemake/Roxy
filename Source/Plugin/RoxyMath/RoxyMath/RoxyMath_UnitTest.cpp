@@ -571,7 +571,7 @@ TEST_CASE("TVec Cross product (3D only)")
     // Member version
     TVec<double, 3> a{2.0, 3.0, 4.0};
     TVec<double, 3> b{5.0, 6.0, 7.0};
-    auto res = a.Cross(b);
+    auto res = Cross(a, b);
     CHECK(res[0] == doctest::Approx(-3.0));
     CHECK(res[1] == doctest::Approx(6.0));
     CHECK(res[2] == doctest::Approx(-3.0));
@@ -595,7 +595,7 @@ TEST_CASE("TVec As<U> conversion")
     using namespace Roxy::Math;
 
     constexpr TVec<int, 3> vi{1, 2, 3};
-    constexpr auto vf = vi.template As<float>();
+    constexpr auto vf = vi.As<float>();
     static_assert(std::is_same_v<decltype(vf), const TVec<float, 3>>);
     static_assert(AlmostEqual(vf[0], 1.0f));
     static_assert(AlmostEqual(vf[1], 2.0f));
@@ -852,4 +852,188 @@ TEST_CASE("TMat inverse (floating point only)")
     static_assert(AlmostEqual(ident4[1][0], 0.0) && AlmostEqual(ident4[1][1], 1.0) && AlmostEqual(ident4[1][2], 0.0) && AlmostEqual(ident4[1][3], 0.0));
     static_assert(AlmostEqual(ident4[2][0], 0.0) && AlmostEqual(ident4[2][1], 0.0) && AlmostEqual(ident4[2][2], 1.0) && AlmostEqual(ident4[2][3], 0.0));
     static_assert(AlmostEqual(ident4[3][0], 0.0) && AlmostEqual(ident4[3][1], 0.0) && AlmostEqual(ident4[3][2], 0.0) && AlmostEqual(ident4[3][3], 1.0));
+}
+
+// ============================================================
+// Additional runtime checks for coverage
+// ============================================================
+
+TEST_CASE("TVec runtime operations for coverage")
+{
+    using namespace Roxy::Math;
+
+    // 2D
+    {
+        TVec<float, 2> a{1.5f, 2.5f};
+        TVec<float, 2> b{3.0f, 4.0f};
+
+        auto sum = a + b;
+        CHECK(sum[0] == doctest::Approx(4.5f));
+        CHECK(sum[1] == doctest::Approx(6.5f));
+
+        auto diff = a - b;
+        CHECK(diff[0] == doctest::Approx(-1.5f));
+        CHECK(diff[1] == doctest::Approx(-1.5f));
+
+        auto prod = a * b;
+        CHECK(prod[0] == doctest::Approx(4.5f));
+        CHECK(prod[1] == doctest::Approx(10.0f));
+
+        auto div = a / b;
+        CHECK(div[0] == doctest::Approx(0.5f));
+        CHECK(div[1] == doctest::Approx(0.625f));
+
+        auto dot = Dot(a, b);
+        CHECK(dot == doctest::Approx(1.5f*3.0f + 2.5f*4.0f));
+
+        auto neg = -a;
+        CHECK(neg[0] == doctest::Approx(-1.5f));
+        CHECK(neg[1] == doctest::Approx(-2.5f));
+    }
+
+    // 3D
+    {
+        TVec<double, 3> a{1.0, 2.0, 3.0};
+        TVec<double, 3> b{4.0, 5.0, 6.0};
+
+        auto cross = Cross(a, b);
+        CHECK(cross[0] == doctest::Approx(-3.0));
+        CHECK(cross[1] == doctest::Approx(6.0));
+        CHECK(cross[2] == doctest::Approx(-3.0));
+
+        auto dot = Dot(a, b);
+        CHECK(dot == doctest::Approx(32.0));
+
+        auto len2 = a.SqrLen();
+        CHECK(len2 == doctest::Approx(14.0));
+        CHECK(a.Len() == doctest::Approx(std::sqrt(14.0)));
+    }
+
+    // 4D
+    {
+        TVec<float, 4> a{1.0f, 2.0f, 3.0f, 4.0f};
+        TVec<float, 4> b{5.0f, 6.0f, 7.0f, 8.0f};
+
+        auto sum = a + b;
+        CHECK(sum[0] == doctest::Approx(6.0f));
+        CHECK(sum[3] == doctest::Approx(12.0f));
+
+        auto dot = Dot(a, b);
+        CHECK(dot == doctest::Approx(70.0f));
+
+        auto scaled = a * 2.0f;
+        CHECK(scaled[0] == doctest::Approx(2.0f));
+        CHECK(scaled[3] == doctest::Approx(8.0f));
+    }
+}
+
+TEST_CASE("TMat runtime operations for coverage")
+{
+    using namespace Roxy::Math;
+
+    // 2x2 matrix arithmetic
+    {
+        TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
+        TMat<double, 2> b{5.0, 6.0, 7.0, 8.0};
+
+        auto sum = a + b;
+        CHECK(sum[0][0] == doctest::Approx(6.0));
+        CHECK(sum[0][1] == doctest::Approx(8.0));
+        CHECK(sum[1][0] == doctest::Approx(10.0));
+        CHECK(sum[1][1] == doctest::Approx(12.0));
+
+        auto diff = a - b;
+        CHECK(diff[0][0] == doctest::Approx(-4.0));
+        CHECK(diff[1][1] == doctest::Approx(-4.0));
+
+        auto prod = a * b;
+        CHECK(prod[0][0] == doctest::Approx(19.0));
+        CHECK(prod[0][1] == doctest::Approx(22.0));
+        CHECK(prod[1][0] == doctest::Approx(43.0));
+        CHECK(prod[1][1] == doctest::Approx(50.0));
+
+        auto trans = a.Transpose();
+        CHECK(trans[0][0] == doctest::Approx(1.0));
+        CHECK(trans[0][1] == doctest::Approx(3.0));
+        CHECK(trans[1][0] == doctest::Approx(2.0));
+        CHECK(trans[1][1] == doctest::Approx(4.0));
+
+        auto det = a.Determinant();
+        CHECK(det == doctest::Approx(-2.0));
+
+        auto inv = a.Inverse();
+        CHECK(inv[0][0] == doctest::Approx(-2.0));
+        CHECK(inv[0][1] == doctest::Approx(1.0));
+        CHECK(inv[1][0] == doctest::Approx(1.5));
+        CHECK(inv[1][1] == doctest::Approx(-0.5));
+    }
+
+    // 3x3 matrix operations
+    {
+        TMat<double, 3> a{1.0, 2.0, 3.0,
+                          0.0, 1.0, 4.0,
+                          5.0, 6.0, 0.0};
+
+        auto det = a.Determinant();
+        CHECK(det == doctest::Approx(1.0));  // actually det = 1*(1*0 - 4*6) - 2*(0*0 - 4*5) + 3*(0*6 - 1*5) = -24 + 40 -15 = 1
+
+        auto inv = a.Inverse();
+        auto prod = a * inv;
+        CHECK(prod[0][0] == doctest::Approx(1.0));
+        CHECK(prod[0][1] == doctest::Approx(0.0));
+        CHECK(prod[0][2] == doctest::Approx(0.0));
+        CHECK(prod[1][0] == doctest::Approx(0.0));
+        CHECK(prod[1][1] == doctest::Approx(1.0));
+        CHECK(prod[1][2] == doctest::Approx(0.0));
+        CHECK(prod[2][0] == doctest::Approx(0.0));
+        CHECK(prod[2][1] == doctest::Approx(0.0));
+        CHECK(prod[2][2] == doctest::Approx(1.0));
+    }
+
+    // 4x4 matrix operations
+    {
+        TMat<double, 4> diag{2.0, 0.0, 0.0, 0.0,
+                             0.0, 4.0, 0.0, 0.0,
+                             0.0, 0.0, 8.0, 0.0,
+                             0.0, 0.0, 0.0, 16.0};
+
+        auto det = diag.Determinant();
+        CHECK(det == doctest::Approx(1024.0)); // 2*4*8*16 = 1024
+
+        auto inv = diag.Inverse();
+        auto prod = diag * inv;
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                CHECK(prod[i][j] == doctest::Approx(i == j ? 1.0 : 0.0));
+    }
+
+    // Matrix-vector multiplication
+    {
+        TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
+        TVec<double, 2> v{5.0, 6.0};
+        auto res = m * v;
+        CHECK(res[0] == doctest::Approx(17.0));
+        CHECK(res[1] == doctest::Approx(39.0));
+    }
+
+    // Scalar operations
+    {
+        TMat<int, 2> m{1, 2, 3, 4};
+
+        auto add = m + 10;
+        CHECK(add[0][0] == 11);
+        CHECK(add[1][1] == 14);
+
+        auto sub = 10 - m;
+        CHECK(sub[0][0] == 9);
+        CHECK(sub[1][1] == 6);
+
+        auto mul = m * 3;
+        CHECK(mul[0][0] == 3);
+        CHECK(mul[1][1] == 12);
+
+        auto div = m / 2;
+        CHECK(div[0][0] == 0);
+        CHECK(div[1][1] == 2);
+    }
 }
