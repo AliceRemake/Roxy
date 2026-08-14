@@ -112,6 +112,9 @@ template<CFloatingPoint T>
 ROXY_NODISCARD consteval T Sqrt(T X) noexcept
 {
     ROXY_ASSERT_MSG(X >= T(0), "Sqrt: No Math Definition");
+
+    if (X == T(0)) { return T(0); }
+
     T Curr = X;
     T Prev = T(0);
     for (FIndex I = 0; I < 128; ++I)
@@ -168,7 +171,8 @@ template<CFloatingPoint T>
 ROXY_NODISCARD consteval T Atan(T X) noexcept
 {
     if (X <  T(0)) { return -Atan(-X); }
-    if (X >= T(1)) { return T(0.5) * Pi<T> - Atan(T(1) / X); }
+    if (X == T(1)) { return T(0.25) * Pi<T>; }
+    if (X >  T(1)) { return T(0.5) * Pi<T> - Atan(T(1) / X); }
 
     T X2 = X * X;
     return X * Poly<T,
