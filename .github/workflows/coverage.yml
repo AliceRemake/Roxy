@@ -50,10 +50,10 @@ jobs:
       - name: Capture coverage data
         run: |
           lcov --capture \
-            --directory ${{ github.workspace }}/build \
-            --output-file coverage.info \
-            --ignore-errors gcov,source \
-            --rc geninfo_unexecuted_blocks=1
+          --directory ${{ github.workspace }}/build \
+          --output-file coverage.info \
+          --ignore-errors gcov,source,negative \
+          --rc geninfo_unexecuted_blocks=1
 
       - name: Filter out system and external code
         run: |
