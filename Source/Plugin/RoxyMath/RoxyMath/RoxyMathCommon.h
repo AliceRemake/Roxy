@@ -317,6 +317,85 @@ ROXY_NODISCARD consteval T Exp(T X) noexcept
     >(Exp1));
 }
 
+template<CArithmetic T>
+ROXY_NODISCARD consteval T Min(T X, T Y) noexcept
+{
+    return X < Y ? X : Y;
+}
+
+template<CArithmetic T>
+ROXY_NODISCARD consteval T Max(T X, T Y) noexcept
+{
+    return X > Y ? X : Y;
+}
+
+template<CArithmetic T>
+ROXY_NODISCARD consteval T Clamp(T X, T Lo, T Hi) noexcept
+{
+    if (X < Lo) { return Lo; }
+    if (X > Hi) { return Hi; }
+    return X;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Lerp(T X, T Y, T Alpha) noexcept
+{
+    return (T(1) - Alpha) * X + Alpha * Y;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Fmod(T X, T Y) noexcept
+{
+    // Use integer truncation toward zero, matching std::fmod behavior.
+    // X and Y are floating-point, we cast the quotient to integral type.
+    const long long Quot = static_cast<long long>(X / Y);
+    return X - Quot * Y;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Floor(T X) noexcept
+{
+    const T IntPart = static_cast<T>(static_cast<long long>(X));
+    if (X < T(0) && X != IntPart)
+    {
+        return IntPart - T(1);
+    }
+    return IntPart;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Ceil(T X) noexcept
+{
+    const T IntPart = static_cast<T>(static_cast<long long>(X));
+    if (X > T(0) && X != IntPart)
+    {
+        return IntPart + T(1);
+    }
+    return IntPart;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Round(T X) noexcept
+{
+    const T IntPart = static_cast<T>(static_cast<long long>(X));
+    const T FracPart = X - IntPart;
+    if (FracPart >= T(0.5))
+    {
+        return IntPart + T(1);
+    }
+    else if (FracPart <= T(-0.5))
+    {
+        return IntPart - T(1);
+    }
+    return IntPart;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD consteval T Trunc(T X) noexcept
+{
+    return static_cast<T>(static_cast<long long>(X));
+}
+
 }
 
 namespace Roxy::Math
@@ -339,6 +418,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr T InvSqrt(T X) noexcept
 template<CArithmetic T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Abs(T X) noexcept
 {
+    if consteval { return Detail::Abs(X); }
     return std::abs(X);
 }
 
@@ -461,54 +541,63 @@ ROXY_NODISCARD ROXY_INLINE constexpr auto Pow(T Base, U Exponent) noexcept -> st
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Floor(T X) noexcept
 {
+    if consteval { return Detail::Floor(X); }
     return std::floor(X);
 }
 
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Ceil(T X) noexcept
 {
+    if consteval { return Detail::Ceil(X); }
     return std::ceil(X);
 }
 
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Round(T X) noexcept
 {
+    if consteval { return Detail::Round(X); }
     return std::round(X);
 }
 
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Trunc(T X) noexcept
 {
+    if consteval { return Detail::Trunc(X); }
     return std::trunc(X);
 }
 
 template<CArithmetic T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Min(T X, T Y) noexcept
 {
+    if consteval { return Detail::Min(X, Y); }
     return std::min(X, Y);
 }
 
 template<CArithmetic T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Max(T X, T Y) noexcept
 {
+    if consteval { return Detail::Max(X, Y); }
     return std::max(X, Y);
 }
 
 template<CArithmetic T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Clamp(T X, T Lo, T Hi) noexcept
 {
+    if consteval { return Detail::Clamp(X, Lo, Hi); }
     return std::clamp(X, Lo, Hi);
 }
 
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Lerp(T X, T Y, T Alpha) noexcept
 {
+    if consteval { return Detail::Lerp(X, Y, Alpha); }
     return std::lerp(X, Y, Alpha);
 }
 
 template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T Fmod(T X, T Y) noexcept
 {
+    if consteval { return Detail::Fmod(X, Y); }
     return std::fmod(X, Y);
 }
 

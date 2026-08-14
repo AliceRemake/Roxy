@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <chrono>
 #include <cmath>
