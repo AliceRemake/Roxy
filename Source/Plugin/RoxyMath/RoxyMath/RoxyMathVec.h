@@ -6,11 +6,36 @@ namespace Roxy::Math
 {
 template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TVec;
 
-template <typename FVec, typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4)
+template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TMatBase;
+template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4) class TMat;
+
+template <typename T, FIndex Dim> requires std::is_arithmetic_v<T> && (2 <= Dim && Dim <= 4)
 class TVecBase
 {
+protected:
+    using FVec = TVec<T, Dim>;
+    using FMat = TMat<T, Dim>;
+    alignas(16) T Payload[(Dim == 3) ? 4 : Dim] {};
+
 public:
     ROXY_NODISCARD ROXY_INLINE constexpr TVecBase() noexcept = default;
+
+    ROXY_NODISCARD ROXY_INLINE constexpr explicit TVecBase(T Scalar) noexcept
+    {
+        if constexpr (Dim >= 2)
+        {
+            Payload[0] = T(Scalar);
+            Payload[1] = T(Scalar);
+        }
+        if constexpr (Dim >= 3)
+        {
+            Payload[2] = T(Scalar);
+        }
+        if constexpr (Dim >= 4)
+        {
+            Payload[3] = T(Scalar);
+        }
+    }
 
     ROXY_NODISCARD ROXY_INLINE constexpr TVecBase(TInitList<T> InitList) noexcept
     {
@@ -31,7 +56,7 @@ public:
         }
     }
 
-    ROXY_NODISCARD ROXY_INLINE T& operator[](FIndex Idx) noexcept
+    ROXY_NODISCARD ROXY_INLINE constexpr T& operator[](FIndex Idx) noexcept
     {
         ROXY_ASSERT((0 <= Idx && Idx < Dim) && "Vec Index Out Of Bound");
         return Payload[Idx];
@@ -86,7 +111,7 @@ public:
     ROXY_NODISCARD ROXY_INLINE static constexpr FVec Axis(FIndex Idx) noexcept
     {
         FVec Temp{};
-        Temp[Idx] = static_cast<T>(1);
+        Temp.Payload[Idx] = static_cast<T>(1);
         return Temp;
     }
 
@@ -190,12 +215,12 @@ public:
         }
         else if constexpr (Dim == 3)
         {
-            return std::min(Payload[0], Payload[1], Payload[2]);
+            return std::min({ Payload[0], Payload[1], Payload[2] });
         }
         else
         {
             static_assert(Dim == 4 && "Vec Dim Out Of Bound");
-            return std::min(Payload[0], Payload[1], Payload[2], Payload[3]);
+            return std::min({ Payload[0], Payload[1], Payload[2], Payload[3] });
         }
     }
 
@@ -207,27 +232,24 @@ public:
         }
         else if constexpr (Dim == 3)
         {
-            return std::max(Payload[0], Payload[1], Payload[2]);
+            return std::max({ Payload[0], Payload[1], Payload[2] });
         }
         else
         {
             static_assert(Dim == 4 && "Vec Dim Out Of Bound");
-            return std::max(Payload[0], Payload[1], Payload[2], Payload[3]);
+            return std::max({ Payload[0], Payload[1], Payload[2], Payload[3] });
         }
     }
 
     ROXY_NODISCARD ROXY_INLINE constexpr T SqrLen() const noexcept
     {
-        return Dot(static_cast<const FVec&>(*this));
+        return Dot(static_cast<const FVec&>(*this), static_cast<const FVec&>(*this));
     }
 
     ROXY_NODISCARD ROXY_INLINE constexpr T Len() const noexcept requires std::is_floating_point_v<T>
     {
         return static_cast<T>(Sqrt(SqrLen()));
     }
-
-protected:
-    alignas(16) T Payload[(Dim == 3) ? 4 : Dim] {};
 };
 
 template <typename T, FIndex Dim>
@@ -457,15 +479,15 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> operator/(T scalar, const TVec
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
-class TVec<T, 2> : public TVecBase<TVec<T, 2>, T, 2>
+class TVec<T, 2> : public TVecBase<T, 2>
 {
-    friend class TVecBase<TVec, T, 2>;
-
 public:
-    using TVecBase<TVec, T, 2>::TVecBase;
+    friend class TVecBase<T, 2>;
+    friend class TMatBase<T, 2>;
+    using TVecBase<T, 2>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<TVec, T, 2>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<TVec, T, 2>::Axis(1); }
+    static constexpr TVec AxisX() noexcept { return TVecBase<T, 2>::Axis(0); }
+    static constexpr TVec AxisY() noexcept { return TVecBase<T, 2>::Axis(1); }
 
     ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
     ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
@@ -474,16 +496,16 @@ public:
 };
 
 template <typename T> requires std::is_arithmetic_v<T>
-class TVec<T, 3> : public TVecBase<TVec<T, 3>, T, 3>
+class TVec<T, 3> : public TVecBase<T, 3>
 {
-    friend class TVecBase<TVec, T, 3>;
-
 public:
-    using TVecBase<TVec, T, 3>::TVecBase;
+    friend class TVecBase<T, 3>;
+    friend class TMatBase<T, 3>;
+    using TVecBase<T, 3>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<TVec, T, 3>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<TVec, T, 3>::Axis(1); }
-    static constexpr TVec AxisZ() noexcept { return TVecBase<TVec, T, 3>::Axis(2); }
+    static constexpr TVec AxisX() noexcept { return TVecBase<T, 3>::Axis(0); }
+    static constexpr TVec AxisY() noexcept { return TVecBase<T, 3>::Axis(1); }
+    static constexpr TVec AxisZ() noexcept { return TVecBase<T, 3>::Axis(2); }
 
     ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
     ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
@@ -499,17 +521,17 @@ public:
 };
 
 template <typename T> requires std::is_arithmetic_v<T>
-class TVec<T, 4> : public TVecBase<TVec<T, 4>, T, 4>
+class TVec<T, 4> : public TVecBase<T, 4>
 {
-    friend class TVecBase<TVec, T, 4>;
-
 public:
-    using TVecBase<TVec, T, 4>::TVecBase;
+    friend class TVecBase<T, 4>;
+    friend class TMatBase<T, 4>;
+    using TVecBase<T, 4>::TVecBase;
 
-    static constexpr TVec AxisX() noexcept { return TVecBase<TVec, T, 4>::Axis(0); }
-    static constexpr TVec AxisY() noexcept { return TVecBase<TVec, T, 4>::Axis(1); }
-    static constexpr TVec AxisZ() noexcept { return TVecBase<TVec, T, 4>::Axis(2); }
-    static constexpr TVec AxisW() noexcept { return TVecBase<TVec, T, 4>::Axis(3); }
+    static constexpr TVec AxisX() noexcept { return TVecBase<T, 4>::Axis(0); }
+    static constexpr TVec AxisY() noexcept { return TVecBase<T, 4>::Axis(1); }
+    static constexpr TVec AxisZ() noexcept { return TVecBase<T, 4>::Axis(2); }
+    static constexpr TVec AxisW() noexcept { return TVecBase<T, 4>::Axis(3); }
 
     ROXY_NODISCARD ROXY_INLINE T& X() noexcept { return this->Payload[0]; }
     ROXY_NODISCARD ROXY_INLINE const T& X() const noexcept { return this->Payload[0]; }
