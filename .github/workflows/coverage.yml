@@ -24,6 +24,11 @@ jobs:
             libx11-dev libxrandr-dev libxinerama-dev \
             libxcursor-dev libxi-dev libgl1-mesa-dev
 
+      - name: Get CMake 4.1.1
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "4.1.1"
+
       - name: Configure CMake with coverage
         run: >
           cmake -B ${{ github.workspace }}/build
