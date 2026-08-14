@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AliceRemake/Roxy/blob/main/LICENSE)
 [![IDE: Rider](https://img.shields.io/badge/IDE-Rider-%23DD1265?logo=jetbrains)](https://www.jetbrains.com/rider/)
+[![codecov](https://codecov.io/gh/AliceRemake/Roxy/branch/main/graph/badge.svg)](https://codecov.io/gh/AliceRemake/Roxy)
 [![linux](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/linux.yml?branch=main&label=Linux&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-linux.yml)
 [![windows](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/windows.yml?branch=main&label=Windows&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-windows.yml)
 [![macos](https://img.shields.io/github/actions/workflow/status/AliceRemake/Roxy/.github/workflows/macos.yml?branch=main&label=macOS&style=flat)](https://github.com/AliceRemake/Roxy/actions/workflows/ci-macos.yml)
