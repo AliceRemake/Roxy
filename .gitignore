@@ -50,6 +50,7 @@ CMakeUserPresets.json
 .git
 .idea
 .codex
+.vscode
 cmake-build-*
 
 # smell-check report output
