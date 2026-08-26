@@ -1,4 +1,4 @@
-﻿### C++ template
+### C++ template
 # Prerequisites
 *.d
 
@@ -49,4 +49,8 @@ CMakeUserPresets.json
 ### Custom
 .git
 .idea
+.codex
 cmake-build-*
+
+# smell-check report output
+.smell-check
