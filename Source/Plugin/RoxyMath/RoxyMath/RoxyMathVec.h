@@ -573,3 +573,10 @@ ROXY_NODISCARD ROXY_INLINE constexpr TVec<T, Dim> Normalized(const TVec<T, Dim>&
 }
 
 }
+
+namespace Roxy::Math
+{
+using FVec2 = TVec<float, 2>;
+using FVec3 = TVec<float, 3>;
+using FVec4 = TVec<float, 4>;
+}

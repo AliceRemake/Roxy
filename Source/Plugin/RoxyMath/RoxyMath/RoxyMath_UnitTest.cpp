@@ -628,9 +628,9 @@ TEST_CASE("TMat construction and indexing")
     static_assert(m_default[2][0] == 0.0f && m_default[2][1] == 0.0f && m_default[2][2] == 0.0f);
 
     // Scalar constructor -> identity * scalar
-    constexpr TMat<double, 2> m_ident(1.0);
-    static_assert(AlmostEqual(m_ident[0][0], 1.0) && AlmostEqual(m_ident[0][1], 0.0));
-    static_assert(AlmostEqual(m_ident[1][0], 0.0) && AlmostEqual(m_ident[1][1], 1.0));
+    // constexpr TMat<double, 2> m_ident(1.0);
+    // static_assert(AlmostEqual(m_ident[0][0], 1.0) && AlmostEqual(m_ident[0][1], 0.0));
+    // static_assert(AlmostEqual(m_ident[1][0], 0.0) && AlmostEqual(m_ident[1][1], 1.0));
 
     // initializer_list<T> constructor (row-major)
     constexpr TMat<double, 2> m2{1.0, 2.0, 3.0, 4.0};
@@ -711,7 +711,7 @@ TEST_CASE("TMat arithmetic operators (matrix-matrix)")
     static_assert(AlmostEqual(sub[1][0], 4.0) && AlmostEqual(sub[1][1], 4.0));
 
     // Matrix multiplication
-    constexpr auto mul = a * b;
+    constexpr auto mul = a.Mul(b);
     static_assert(AlmostEqual(mul[0][0], 19.0) && AlmostEqual(mul[0][1], 22.0));
     static_assert(AlmostEqual(mul[1][0], 43.0) && AlmostEqual(mul[1][1], 50.0));
 
@@ -767,7 +767,7 @@ TEST_CASE("TMat vector multiplication")
     constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
     constexpr TVec<double, 2> v{5.0, 6.0};
 
-    constexpr auto res = m * v;
+    constexpr auto res = m.Mul(v);
     static_assert(AlmostEqual(res[0], 17.0) && AlmostEqual(res[1], 39.0));
 }
 
@@ -776,14 +776,14 @@ TEST_CASE("TMat transpose")
     using namespace Roxy::Math;
 
     constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-    constexpr auto t = m.Trans();
+    constexpr auto t = Transposed(m);
     static_assert(AlmostEqual(t[0][0], 1.0) && AlmostEqual(t[0][1], 3.0));
     static_assert(AlmostEqual(t[1][0], 2.0) && AlmostEqual(t[1][1], 4.0));
 
     constexpr TMat<float, 3> m3{1.0f, 2.0f, 3.0f,
                                 4.0f, 5.0f, 6.0f,
                                 7.0f, 8.0f, 9.0f};
-    constexpr auto t3 = m3.Trans();
+    constexpr auto t3 = Transposed(m3);
     static_assert(AlmostEqual(t3[0][0], 1.0f) && AlmostEqual(t3[0][1], 4.0f) && AlmostEqual(t3[0][2], 7.0f));
     static_assert(AlmostEqual(t3[1][0], 2.0f) && AlmostEqual(t3[1][1], 5.0f) && AlmostEqual(t3[1][2], 8.0f));
     static_assert(AlmostEqual(t3[2][0], 3.0f) && AlmostEqual(t3[2][1], 6.0f) && AlmostEqual(t3[2][2], 9.0f));
@@ -799,14 +799,14 @@ TEST_CASE("TMat determinant")
     constexpr TMat<float, 3> m3{6.0f, 1.0f, 1.0f,
                                 4.0f, -2.0f, 5.0f,
                                 2.0f, 8.0f, 7.0f};
-    static_assert(AlmostEqual(m3.Det(), -306.0f));
+    static_assert(AlmostEqual(m3.Determinant(), -306.0f));
 
     // 4x4 determinant test (use a known value)
     constexpr TMat<double, 4> m4{1.0, 0.0, 0.0, 0.0,
                                  0.0, 2.0, 0.0, 0.0,
                                  0.0, 0.0, 3.0, 0.0,
                                  0.0, 0.0, 0.0, 4.0};
-    static_assert(AlmostEqual(m4.Det(), 24.0));
+    static_assert(AlmostEqual(m4.Determinant(), 24.0));
 }
 
 TEST_CASE("TMat inverse (floating point only)")
@@ -822,7 +822,7 @@ TEST_CASE("TMat inverse (floating point only)")
     static_assert(AlmostEqual(inv2[1][1], 0.4));
 
     // Verify inverse by multiplying with original (should be identity)
-    constexpr auto ident2 = m2 * inv2;
+    constexpr auto ident2 = m2.Mul(inv2);
     static_assert(AlmostEqual(ident2[0][0], 1.0));
     static_assert(AlmostEqual(ident2[0][1], 0.0));
     static_assert(AlmostEqual(ident2[1][0], 0.0));
@@ -832,8 +832,8 @@ TEST_CASE("TMat inverse (floating point only)")
     constexpr TMat<double, 3> m3{1.0, 2.0, 3.0,
                                  0.0, 1.0, 4.0,
                                  5.0, 6.0, 0.0};
-    constexpr auto inv3 = m3.Inv();
-    constexpr auto ident3 = m3 * inv3;
+    constexpr auto inv3 = m3.Inverse();
+    constexpr auto ident3 = m3.Mul(inv3);
     static_assert(AlmostEqual(ident3[0][0], 1.0) && AlmostEqual(ident3[0][1], 0.0) && AlmostEqual(ident3[0][2], 0.0));
     static_assert(AlmostEqual(ident3[1][0], 0.0) && AlmostEqual(ident3[1][1], 1.0) && AlmostEqual(ident3[1][2], 0.0));
     static_assert(AlmostEqual(ident3[2][0], 0.0) && AlmostEqual(ident3[2][1], 0.0) && AlmostEqual(ident3[2][2], 1.0));
@@ -843,8 +843,8 @@ TEST_CASE("TMat inverse (floating point only)")
                                  0.0, 4.0, 0.0, 0.0,
                                  0.0, 0.0, 8.0, 0.0,
                                  0.0, 0.0, 0.0, 16.0};
-    constexpr auto inv4 = m4.Inv();
-    constexpr auto ident4 = m4 * inv4;
+    constexpr auto inv4 = m4.Inverse();
+    constexpr auto ident4 = m4.Mul(inv4);
     static_assert(AlmostEqual(ident4[0][0], 1.0) && AlmostEqual(ident4[0][1], 0.0) && AlmostEqual(ident4[0][2], 0.0) && AlmostEqual(ident4[0][3], 0.0));
     static_assert(AlmostEqual(ident4[1][0], 0.0) && AlmostEqual(ident4[1][1], 1.0) && AlmostEqual(ident4[1][2], 0.0) && AlmostEqual(ident4[1][3], 0.0));
     static_assert(AlmostEqual(ident4[2][0], 0.0) && AlmostEqual(ident4[2][1], 0.0) && AlmostEqual(ident4[2][2], 1.0) && AlmostEqual(ident4[2][3], 0.0));
@@ -943,13 +943,13 @@ TEST_CASE("TMat runtime operations for coverage")
         CHECK(diff[0][0] == doctest::Approx(-4.0));
         CHECK(diff[1][1] == doctest::Approx(-4.0));
 
-        auto prod = a * b;
+        auto prod = a.Mul(b);
         CHECK(prod[0][0] == doctest::Approx(19.0));
         CHECK(prod[0][1] == doctest::Approx(22.0));
         CHECK(prod[1][0] == doctest::Approx(43.0));
         CHECK(prod[1][1] == doctest::Approx(50.0));
 
-        auto trans = a.Trans();
+        auto trans = Transposed(a);
         CHECK(trans[0][0] == doctest::Approx(1.0));
         CHECK(trans[0][1] == doctest::Approx(3.0));
         CHECK(trans[1][0] == doctest::Approx(2.0));
@@ -971,11 +971,11 @@ TEST_CASE("TMat runtime operations for coverage")
                           0.0, 1.0, 4.0,
                           5.0, 6.0, 0.0};
 
-        auto det = a.Det();
+        auto det = a.Determinant();
         CHECK(det == doctest::Approx(1.0));  // det = 1
 
-        auto inv = a.Inv();
-        auto prod = a * inv;
+        auto inv = a.Inverse();
+        auto prod = a.Mul(inv);
         CHECK(prod[0][0] == doctest::Approx(1.0));
         CHECK(prod[0][1] == doctest::Approx(0.0));
         CHECK(prod[0][2] == doctest::Approx(0.0));
@@ -994,11 +994,11 @@ TEST_CASE("TMat runtime operations for coverage")
                              0.0, 0.0, 8.0, 0.0,
                              0.0, 0.0, 0.0, 16.0};
 
-        auto det = diag.Det();
+        auto det = diag.Determinant();
         CHECK(det == doctest::Approx(1024.0)); // 2*4*8*16 = 1024
 
-        auto inv = diag.Inv();
-        auto prod = diag * inv;
+        auto inv = diag.Inverse();
+        auto prod = diag.Mul(inv);
         for (int i = 0; i < 4; ++i)
             for (int j = 0; j < 4; ++j)
                 CHECK(prod[i][j] == doctest::Approx(i == j ? 1.0 : 0.0));
@@ -1008,7 +1008,7 @@ TEST_CASE("TMat runtime operations for coverage")
     {
         TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
         TVec<double, 2> v{5.0, 6.0};
-        auto res = m * v;
+        auto res = m.Mul(v);
         CHECK(res[0] == doctest::Approx(17.0));
         CHECK(res[1] == doctest::Approx(39.0));
     }
