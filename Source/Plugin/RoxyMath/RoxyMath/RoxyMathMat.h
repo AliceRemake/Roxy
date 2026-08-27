@@ -51,7 +51,7 @@ public:
         auto It = InitList.begin();
         for (FIndex Row = 0; Row < Dim; ++Row)
         {
-            Payload[Row] = It == InitList.end() ? FVec(T(0)) : *(It++);
+            Payload[Row] = It == InitList.end() ? FVec::Zero() : *(It++);
         }
     }
 
