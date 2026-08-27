@@ -6,7 +6,7 @@
 
 constexpr FStringView PluginName = "RoxyLog";
 
-TEST_CASE("Log")
+TEST_CASE("Roxy::Log")
 {
     Roxy::Log::SetLevel(Roxy::Log::ELogLevel::Trace);
     Roxy::Log::SetPattern("[%Y-%m-%d][%H:%M:%S][%^%L%$][%@][%!]%v");

@@ -5,13 +5,13 @@
 namespace Roxy::Alloc
 {
 
-ROXY_INLINE constexpr UIntPtr AlignTo(UIntPtr Addr, UIntPtr Align)
+ROXY_NODISCARD ROXY_INLINE constexpr UIntPtr AlignTo(UIntPtr Addr, UIntPtr Align)
 {
     ROXY_ASSERT((Align & (Align - 1)) == 0 && "Align Must Be A Power Of 2");
     return (Addr + (Align - 1)) & (~(Align - 1));
 }
 
-ROXY_INLINE FByte* AlignTo(FByte* Addr, UIntPtr Align)
+ROXY_NODISCARD ROXY_INLINE FByte* AlignTo(FByte* Addr, UIntPtr Align)
 {
     return reinterpret_cast<FByte*>(AlignTo(reinterpret_cast<UIntPtr>(Addr), Align));
 }
@@ -72,8 +72,8 @@ public:
 private:
     void Clear() noexcept;
 
-    FByte*   Buffer   {};
-    FByte*   Current  {};
+    FByte*  Buffer   {};
+    FByte*  Current  {};
     UIntPtr Capacity {};
 };
 

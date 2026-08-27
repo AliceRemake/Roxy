@@ -4,14 +4,17 @@
 
 #include <RoxyFmt/RoxyFmt.h>
 
-TEST_CASE("Print && Println")
+TEST_CASE("Roxy::Fmt")
 {
-    Roxy::Fmt::Print("Hello RoxyFmt!\n");
-    Roxy::Fmt::Println("Hello RoxyFmt!");
-}
+    SUBCASE("Print/Println")
+    {
+        Roxy::Fmt::Print("Hello RoxyFmt!\n");
+        Roxy::Fmt::Println("Hello RoxyFmt!");
+    }
 
-TEST_CASE("Format")
-{
-    const FString Str = Roxy::Fmt::Format("Hello {}!\n", "RoxyFmt");
-    DOCTEST_CHECK_EQ(Str, "Hello RoxyFmt!\n");
+    SUBCASE("Format")
+    {
+        const FString Str = Roxy::Fmt::Format("Hello {}!\n", "RoxyFmt");
+        DOCTEST_CHECK_EQ(Str, "Hello RoxyFmt!\n");
+    }
 }

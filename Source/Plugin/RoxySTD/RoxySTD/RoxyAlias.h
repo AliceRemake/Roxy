@@ -28,6 +28,8 @@ using I32       = std::int32_t;
 using U32       = std::uint32_t;
 using I64       = std::int64_t;
 using U64       = std::uint64_t;
+using F32       = float;
+using F64       = double;
 using FByte     = std::byte;
 using UIntPtr   = std::uintptr_t;
 using FMaxAlign = std::max_align_t;
@@ -37,7 +39,7 @@ constexpr UIntPtr DefaultAlign = alignof(FMaxAlign);
 template<typename T> using TAtomic = std::atomic<T>;
 
 #include <condition_variable>
-using FCV = std::condition_variable;
+using FConditionVar = std::condition_variable;
 
 #include <initializer_list>
 template<typename T> using TInitList = std::initializer_list<T>;

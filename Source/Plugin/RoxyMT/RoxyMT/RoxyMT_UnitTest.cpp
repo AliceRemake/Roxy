@@ -87,7 +87,7 @@ TEST_CASE("Benchmark: MutexLock vs SpinLock queue throughput")
             else
                 std::this_thread::yield();
         }
-        double Ms = Timer.GetElapsed<Chrono::ETimeUnit::MiS>();
+        double Ms = Timer.Elapsed<Chrono::ETimeUnit::MiS>();
         ROXY_INFO(Log::ELogCategory::Default, "{} elapsed: {:.3f} ms", Name, Ms);
     };
 

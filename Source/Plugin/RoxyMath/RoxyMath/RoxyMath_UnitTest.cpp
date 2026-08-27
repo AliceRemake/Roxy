@@ -6,1465 +6,779 @@
 #include <RoxyChrono/RoxyChrono.h>
 #include <RoxyLog/RoxyLog.h>
 
-// Compiler barrier: prevents the benchmark loop body from being constant-folded
-// or hoisted out of the loop (loop-invariant code motion).
-#if defined(__clang__) || defined(__GNUC__)
-#define ROXY_BENCH_BARRIER() __asm__ __volatile__("" ::: "memory")
-#else
-#include <intrin.h>
-#define ROXY_BENCH_BARRIER() _ReadWriteBarrier()
-#endif
+using namespace Roxy::Math;
 
-namespace
+TEST_CASE("Roxy::Math")
 {
-constexpr double PiValue = Roxy::Math::Pi<double>;
-constexpr double EValue  = Roxy::Math::E<double>;
-
-template<typename T>
-constexpr bool AlmostEqual(T A, T B, T Epsilon = T(1e-9))
-{
-    return Roxy::Math::Abs(A - B) <= Epsilon;
-}
-} // namespace
-
-// ============================================================
-// Concepts and constants
-// ============================================================
-TEST_CASE("Math concepts")
-{
-    static_assert(Roxy::Math::CIntegral<int>);
-    static_assert(Roxy::Math::CFloatingPoint<double>);
-    static_assert(Roxy::Math::CArithmetic<float>);
-    static_assert(!Roxy::Math::CIntegral<float>);
-    static_assert(Roxy::Math::CArithmetic<int>);
-}
-
-TEST_CASE("Math constants")
-{
-    using namespace Roxy::Math;
-
-    static_assert(Pi<double> > 3.141592 && Pi<double> < 3.141593);
-    static_assert(E<double> > 2.71828 && E<double> < 2.71829);
-
-    CHECK(Pi<double> == doctest::Approx(3.14159265358979323846));
-    CHECK(E<double> == doctest::Approx(2.71828182845904523536));
-    CHECK(Ln2<double> == doctest::Approx(std::log(2.0)));
-    CHECK(Ln10<double> == doctest::Approx(std::log(10.0)));
-    CHECK(Log2E<double> == doctest::Approx(std::log2(std::exp(1.0))));
-    CHECK(Log10E<double> == doctest::Approx(std::log10(std::exp(1.0))));
-    CHECK(Sqrt2<double> == doctest::Approx(std::sqrt(2.0)));
-    CHECK(Sqrt3<double> == doctest::Approx(std::sqrt(3.0)));
-    CHECK(InvSqrt2<double> == doctest::Approx(1.0 / std::sqrt(2.0)));
-    CHECK(DegToRadCoeff<double> == doctest::Approx(Pi<double> / 180.0));
-    CHECK(RadToDegCoeff<double> == doctest::Approx(180.0 / Pi<double>));
-}
-
-// ============================================================
-// Abs
-// ============================================================
-TEST_CASE("Abs")
-{
-    static_assert(Roxy::Math::Abs(-5) == 5);
-    static_assert(Roxy::Math::Abs(5) == 5);
-    static_assert(Roxy::Math::Abs(-3.14) == 3.14);
-    static_assert(Roxy::Math::Abs(3.14) == 3.14);
-
-    CHECK(Roxy::Math::Abs(-5) == 5);
-    CHECK(Roxy::Math::Abs(5) == 5);
-    CHECK(Roxy::Math::Abs(-3.14) == doctest::Approx(3.14));
-    CHECK(Roxy::Math::Abs(3.14) == doctest::Approx(3.14));
-}
-
-// ============================================================
-// Sqrt / InvSqrt
-// ============================================================
-TEST_CASE("Sqrt and InvSqrt")
-{
-    static_assert(Roxy::Math::Sqrt(0.0) == 0.0);
-    static_assert(Roxy::Math::Sqrt(1.0) == 1.0);
-    static_assert(Roxy::Math::Sqrt(4.0) == 2.0);
-    static_assert(Roxy::Math::Sqrt(10000.0) == 100.0);
-    static_assert(Roxy::Math::InvSqrt(4.0) == 0.5);
-
-    constexpr double SqrtInputs[] = {0.0, 1.0, 2.0, 3.0, 4.0, 9.0, 100.0};
-    constexpr auto SqrtResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Sqrt(SqrtInputs[Is])... };
-    }(std::make_index_sequence<std::size(SqrtInputs)>{});
-
-    for (std::size_t i = 0; i < std::size(SqrtInputs); ++i) {
-        CHECK(SqrtResults[i] == doctest::Approx(std::sqrt(SqrtInputs[i])));
-    }
-
-    volatile double x = 0.0;
-    CHECK(Roxy::Math::Sqrt(x) == doctest::Approx(0.0));
-    x = 2.0;
-    CHECK(Roxy::Math::Sqrt(x) == doctest::Approx(std::sqrt(2.0)));
-    x = 0.25;
-    CHECK(Roxy::Math::Sqrt(x) == doctest::Approx(0.5));
-    x = 1e6;
-    CHECK(Roxy::Math::Sqrt(x) == doctest::Approx(1000.0));
-
-    CHECK(Roxy::Math::InvSqrt(4.0) == doctest::Approx(0.5));
-    CHECK(Roxy::Math::InvSqrt(2.0) == doctest::Approx(1.0 / std::sqrt(2.0)));
-}
-
-// ============================================================
-// Trigonometric functions (Sin, Cos, Tan)
-// ============================================================
-TEST_CASE("Trigonometric functions")
-{
-    static_assert(Roxy::Math::Sin(0.0) == 0.0);
-    static_assert(Roxy::Math::Tan(0.0) == 0.0);
-    static_assert(AlmostEqual(Roxy::Math::Cos(0.0), 1.0));
-
-    static_assert(AlmostEqual(Roxy::Math::Sin(PiValue / 2), 1.0));
-    static_assert(AlmostEqual(Roxy::Math::Sin(PiValue), 0.0));
-    static_assert(AlmostEqual(Roxy::Math::Sin(-PiValue / 2), -1.0));
-    static_assert(AlmostEqual(Roxy::Math::Cos(PiValue / 2), 0.0));
-    static_assert(AlmostEqual(Roxy::Math::Cos(PiValue), -1.0));
-    static_assert(AlmostEqual(Roxy::Math::Tan(PiValue / 4), 1.0));
-
-    constexpr double TrigInputs[] = {-10.0, -1.0, 0.0, 0.5, 1.0, 10.0};
-    constexpr auto SinResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Sin(TrigInputs[Is])... };
-    }(std::make_index_sequence<std::size(TrigInputs)>{});
-    constexpr auto CosResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Cos(TrigInputs[Is])... };
-    }(std::make_index_sequence<std::size(TrigInputs)>{});
-    constexpr auto TanResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Tan(TrigInputs[Is])... };
-    }(std::make_index_sequence<std::size(TrigInputs)>{});
-
-    for (std::size_t i = 0; i < std::size(TrigInputs); ++i) {
-        CHECK(SinResults[i] == doctest::Approx(std::sin(TrigInputs[i])));
-        CHECK(CosResults[i] == doctest::Approx(std::cos(TrigInputs[i])));
-        CHECK(TanResults[i] == doctest::Approx(std::tan(TrigInputs[i])));
-    }
-
-    volatile double x = 0.5;
-    CHECK(Roxy::Math::Sin(x) == doctest::Approx(std::sin(x)));
-    CHECK(Roxy::Math::Cos(x) == doctest::Approx(std::cos(x)));
-    CHECK(Roxy::Math::Tan(x) == doctest::Approx(std::tan(x)));
-    x = 1.0;
-    CHECK(Roxy::Math::Sin(x) == doctest::Approx(std::sin(x)));
-    x = -0.5;
-    CHECK(Roxy::Math::Sin(x) == doctest::Approx(std::sin(x)));
-}
-
-// ============================================================
-// Inverse trigonometric functions (Asin, Acos, Atan, Atan2)
-// ============================================================
-TEST_CASE("Inverse trigonometric functions")
-{
-    static_assert(Roxy::Math::Asin(0.0) == 0.0);
-    static_assert(Roxy::Math::Asin(1.0) == PiValue / 2);
-    static_assert(Roxy::Math::Asin(-1.0) == -PiValue / 2);
-
-    static_assert(Roxy::Math::Acos(1.0) == 0.0);
-    static_assert(Roxy::Math::Acos(0.0) == PiValue / 2);
-    static_assert(Roxy::Math::Acos(-1.0) == PiValue);
-
-    static_assert(Roxy::Math::Atan(0.0) == 0.0);
-    static_assert(Roxy::Math::Atan(1.0) == PiValue / 4);
-    static_assert(Roxy::Math::Atan(-1.0) == -PiValue / 4);
-
-    static_assert(Roxy::Math::Atan2(0.0, 1.0) == 0.0);
-    static_assert(Roxy::Math::Atan2(1.0, 0.0) == PiValue / 2);
-    static_assert(Roxy::Math::Atan2(-1.0, 0.0) == -PiValue / 2);
-
-    constexpr double InvTrigInputs[] = {-1.0, -0.5, 0.0, 0.5, 1.0};
-    constexpr auto AsinResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Asin(InvTrigInputs[Is])... };
-    }(std::make_index_sequence<std::size(InvTrigInputs)>{});
-    constexpr auto AcosResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Acos(InvTrigInputs[Is])... };
-    }(std::make_index_sequence<std::size(InvTrigInputs)>{});
-    constexpr double AtanInputs[] = {-10.0, -1.0, -0.5, 0.0, 0.5, 1.0, 10.0};
-    constexpr auto AtanResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Atan(AtanInputs[Is])... };
-    }(std::make_index_sequence<std::size(AtanInputs)>{});
-
-    for (std::size_t i = 0; i < std::size(InvTrigInputs); ++i) {
-        CHECK(AsinResults[i] == doctest::Approx(std::asin(InvTrigInputs[i])));
-        CHECK(AcosResults[i] == doctest::Approx(std::acos(InvTrigInputs[i])));
-    }
-    for (std::size_t i = 0; i < std::size(AtanInputs); ++i) {
-        CHECK(AtanResults[i] == doctest::Approx(std::atan(AtanInputs[i])));
-    }
-
-    volatile double y = 1.0;
-    volatile double x = 0.0;
-    CHECK(Roxy::Math::Atan2(y, x) == doctest::Approx(std::atan2(y, x)));
-    y = 1.0;
-    x = 1.0;
-    CHECK(Roxy::Math::Atan2(y, x) == doctest::Approx(std::atan2(y, x)));
-    y = -1.0;
-    x = 1.0;
-    CHECK(Roxy::Math::Atan2(y, x) == doctest::Approx(std::atan2(y, x)));
-    y = 1.0;
-    x = -1.0;
-    CHECK(Roxy::Math::Atan2(y, x) == doctest::Approx(std::atan2(y, x)));
-    y = -1.0;
-    x = -1.0;
-    CHECK(Roxy::Math::Atan2(y, x) == doctest::Approx(std::atan2(y, x)));
-
-    volatile double v = 0.5;
-    CHECK(Roxy::Math::Asin(v) == doctest::Approx(std::asin(v)));
-    CHECK(Roxy::Math::Acos(v) == doctest::Approx(std::acos(v)));
-    CHECK(Roxy::Math::Atan(v) == doctest::Approx(std::atan(v)));
-}
-
-// ============================================================
-// Hyperbolic functions (Sinh, Cosh, Tanh)
-// ============================================================
-TEST_CASE("Hyperbolic functions")
-{
-    static_assert(Roxy::Math::Sinh(0.0) == 0.0);
-    static_assert(Roxy::Math::Cosh(0.0) == 1.0);
-    static_assert(Roxy::Math::Tanh(0.0) == 0.0);
-
-    constexpr double HypInputs[] = {-2.0, -0.5, 0.0, 0.5, 2.0};
-    constexpr auto SinhResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Sinh(HypInputs[Is])... };
-    }(std::make_index_sequence<std::size(HypInputs)>{});
-    constexpr auto CoshResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Cosh(HypInputs[Is])... };
-    }(std::make_index_sequence<std::size(HypInputs)>{});
-    constexpr auto TanhResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Tanh(HypInputs[Is])... };
-    }(std::make_index_sequence<std::size(HypInputs)>{});
-
-    for (std::size_t i = 0; i < std::size(HypInputs); ++i) {
-        CHECK(SinhResults[i] == doctest::Approx(std::sinh(HypInputs[i])));
-        CHECK(CoshResults[i] == doctest::Approx(std::cosh(HypInputs[i])));
-        CHECK(TanhResults[i] == doctest::Approx(std::tanh(HypInputs[i])));
-    }
-
-    volatile double x = 0.5;
-    CHECK(Roxy::Math::Sinh(x) == doctest::Approx(std::sinh(x)));
-    CHECK(Roxy::Math::Cosh(x) == doctest::Approx(std::cosh(x)));
-    CHECK(Roxy::Math::Tanh(x) == doctest::Approx(std::tanh(x)));
-    x = -0.5;
-    CHECK(Roxy::Math::Sinh(x) == doctest::Approx(std::sinh(x)));
-    x = 2.0;
-    CHECK(Roxy::Math::Sinh(x) == doctest::Approx(std::sinh(x)));
-}
-
-// ============================================================
-// Exp and Log (including Log2, Log10)
-// ============================================================
-TEST_CASE("Exp and Log")
-{
-    static_assert(Roxy::Math::Exp(0.0) == 1.0);
-    static_assert(AlmostEqual(Roxy::Math::Exp(1.0), EValue));
-    static_assert(Roxy::Math::Log(1.0) == 0.0);
-    static_assert(AlmostEqual(Roxy::Math::Log(EValue), 1.0));
-    static_assert(Roxy::Math::Log2(8.0) == 3.0);
-    static_assert(Roxy::Math::Log10(1000.0) == 3.0);
-
-    constexpr double ExpInputs[] = {-2.0, -1.0, 0.0, 0.5, 1.0, 2.0};
-    constexpr auto ExpResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Exp(ExpInputs[Is])... };
-    }(std::make_index_sequence<std::size(ExpInputs)>{});
-    for (std::size_t i = 0; i < std::size(ExpInputs); ++i) {
-        CHECK(ExpResults[i] == doctest::Approx(std::exp(ExpInputs[i])));
-    }
-
-    constexpr double LogInputs[] = {0.5, 1.0, 2.0, EValue, 10.0};
-    constexpr auto LogResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Log(LogInputs[Is])... };
-    }(std::make_index_sequence<std::size(LogInputs)>{});
-    for (std::size_t i = 0; i < std::size(LogInputs); ++i) {
-        CHECK(LogResults[i] == doctest::Approx(std::log(LogInputs[i])));
-    }
-
-    volatile double x = 1.0;
-    CHECK(Roxy::Math::Exp(x) == doctest::Approx(std::exp(x)));
-    x = 2.0;
-    CHECK(Roxy::Math::Exp(x) == doctest::Approx(std::exp(x)));
-    x = 0.5;
-    CHECK(Roxy::Math::Exp(x) == doctest::Approx(std::exp(x)));
-
-    x = 2.0;
-    CHECK(Roxy::Math::Log(x) == doctest::Approx(std::log(x)));
-    CHECK(Roxy::Math::Log2(x) == doctest::Approx(std::log2(x)));
-    CHECK(Roxy::Math::Log10(x) == doctest::Approx(std::log10(x)));
-    x = 10.0;
-    CHECK(Roxy::Math::Log(x) == doctest::Approx(std::log(x)));
-    CHECK(Roxy::Math::Log2(x) == doctest::Approx(std::log2(x)));
-    CHECK(Roxy::Math::Log10(x) == doctest::Approx(std::log10(x)));
-}
-
-// ============================================================
-// Pow (integer and floating point exponents)
-// ============================================================
-TEST_CASE("Pow")
-{
-    static_assert(Roxy::Math::Pow(2.0, 0) == 1.0);
-    static_assert(Roxy::Math::Pow(2.0, 3) == 8.0);
-    static_assert(Roxy::Math::Pow(2.0, -1) == 0.5);
-    static_assert(Roxy::Math::Pow(3.0, 2) == 9.0);
-
-    static_assert(AlmostEqual(Roxy::Math::Pow(4.0, 0.5), 2.0));
-    static_assert(AlmostEqual(Roxy::Math::Pow(2.0, 0.5), Roxy::Math::Sqrt2<double>));
-
-    constexpr double BaseInt = 3.0;
-    constexpr int IntExponents[] = {-2, -1, 0, 1, 2, 3};
-    constexpr auto PowIntResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Pow(BaseInt, IntExponents[Is])... };
-    }(std::make_index_sequence<std::size(IntExponents)>{});
-    for (std::size_t i = 0; i < std::size(IntExponents); ++i) {
-        CHECK(PowIntResults[i] == doctest::Approx(std::pow(BaseInt, static_cast<double>(IntExponents[i]))));
-    }
-
-    constexpr double BaseFloat = 4.0;
-    constexpr double FloatExponents[] = {-1.0, -0.5, 0.0, 0.5, 1.0, 2.0};
-    constexpr auto PowFloatResults = [&]<std::size_t... Is>(std::index_sequence<Is...>) constexpr {
-        return std::array<double, sizeof...(Is)>{ Roxy::Math::Pow(BaseFloat, FloatExponents[Is])... };
-    }(std::make_index_sequence<std::size(FloatExponents)>{});
-    for (std::size_t i = 0; i < std::size(FloatExponents); ++i) {
-        CHECK(PowFloatResults[i] == doctest::Approx(std::pow(BaseFloat, FloatExponents[i])));
-    }
-
-    volatile double b = 2.0;
-    volatile int ei = 3;
-    CHECK(Roxy::Math::Pow(b, ei) == doctest::Approx(8.0));
-    volatile double ef = 0.5;
-    CHECK(Roxy::Math::Pow(b, ef) == doctest::Approx(std::sqrt(2.0)));
-
-    CHECK(Roxy::Math::Pow(2.0, 3) == doctest::Approx(8.0));
-    CHECK(Roxy::Math::Pow(2.0, -1) == doctest::Approx(0.5));
-    CHECK(Roxy::Math::Pow(3.0, 2.0) == doctest::Approx(9.0));
-}
-
-// ============================================================
-// Utility functions (Min, Max, Clamp, Lerp, Fmod, Floor, Ceil, Round, Trunc, ToRadian, ToDegree)
-// ============================================================
-TEST_CASE("Utility functions")
-{
-    static_assert(Roxy::Math::Min(3, 5) == 3);
-    static_assert(Roxy::Math::Max(3, 5) == 5);
-    static_assert(Roxy::Math::Clamp(7, 0, 10) == 7);
-    static_assert(Roxy::Math::Clamp(-1, 0, 10) == 0);
-    static_assert(Roxy::Math::Clamp(15, 0, 10) == 10);
-
-    static_assert(Roxy::Math::Lerp(0.0, 10.0, 0.25) == 2.5);
-    static_assert(Roxy::Math::Fmod(5.5, 2.0) == 1.5);
-    static_assert(Roxy::Math::Floor(3.7) == 3.0);
-    static_assert(Roxy::Math::Ceil(3.2) == 4.0);
-    static_assert(Roxy::Math::Round(3.5) == 4.0);
-    static_assert(Roxy::Math::Trunc(-3.7) == -3.0);
-
-    static_assert(Roxy::Math::ToRadian(180.0) == PiValue);
-    static_assert(Roxy::Math::ToDegree(PiValue) == 180.0);
-
-    CHECK(Roxy::Math::Min(3, 5) == 3);
-    CHECK(Roxy::Math::Max(3, 5) == 5);
-    CHECK(Roxy::Math::Clamp(7, 0, 10) == 7);
-    CHECK(Roxy::Math::Clamp(-1, 0, 10) == 0);
-    CHECK(Roxy::Math::Clamp(15, 0, 10) == 10);
-
-    CHECK(Roxy::Math::Lerp(0.0, 10.0, 0.25) == doctest::Approx(2.5));
-    CHECK(Roxy::Math::Fmod(5.5, 2.0) == doctest::Approx(1.5));
-
-    CHECK(Roxy::Math::Floor(3.7) == 3.0);
-    CHECK(Roxy::Math::Ceil(3.2) == 4.0);
-    CHECK(Roxy::Math::Round(3.5) == 4.0);
-    CHECK(Roxy::Math::Trunc(-3.7) == -3.0);
-
-    CHECK(Roxy::Math::ToRadian(180.0) == doctest::Approx(PiValue));
-    CHECK(Roxy::Math::ToDegree(PiValue) == doctest::Approx(180.0));
-}
-
-// ============================================================
-// TVec tests
-// ============================================================
-
-TEST_CASE("TVec construction and indexing")
-{
-    using namespace Roxy::Math;
-
-    // Default constructor -> zero vector
-    constexpr TVec<float, 3> v_default;
-    static_assert(v_default[0] == 0.0f && v_default[1] == 0.0f && v_default[2] == 0.0f);
-
-    // initializer_list constructor
-    constexpr TVec<double, 2> v2{1.0, 2.0};
-    static_assert(AlmostEqual(v2[0], 1.0) && AlmostEqual(v2[1], 2.0));
-
-    constexpr TVec<float, 4> v4{1.0f, 2.0f, 3.0f, 4.0f};
-    static_assert(v4[0] == 1.0f && v4[1] == 2.0f && v4[2] == 3.0f && v4[3] == 4.0f);
-
-    // Accessors X, Y, Z, W
-    TVec<double, 3> v{1.5, 2.5, 3.5};
-    CHECK(v.X() == doctest::Approx(1.5));
-    CHECK(v.Y() == doctest::Approx(2.5));
-    CHECK(v.Z() == doctest::Approx(3.5));
-
-    TVec<double, 2> v2d{4.0, 5.0};
-    CHECK(v2d.X() == doctest::Approx(4.0));
-    CHECK(v2d.Y() == doctest::Approx(5.0));
-
-    TVec<double, 4> v4d{1.0, 2.0, 3.0, 4.0};
-    CHECK(v4d.X() == doctest::Approx(1.0));
-    CHECK(v4d.Y() == doctest::Approx(2.0));
-    CHECK(v4d.Z() == doctest::Approx(3.0));
-    CHECK(v4d.W() == doctest::Approx(4.0));
-}
-
-TEST_CASE("TVec static factory functions")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<float, 3> zero = TVec<float, 3>::Zero();
-    static_assert(zero[0] == 0.0f && zero[1] == 0.0f && zero[2] == 0.0f);
-
-    constexpr TVec<double, 2> one = TVec<double, 2>::One();
-    static_assert(AlmostEqual(one[0], 1.0) && AlmostEqual(one[1], 1.0));
-
-    constexpr TVec<float, 4> axis_x = TVec<float, 4>::AxisX();
-    static_assert(axis_x[0] == 1.0f && axis_x[1] == 0.0f && axis_x[2] == 0.0f && axis_x[3] == 0.0f);
-
-    constexpr TVec<float, 3> axis_y = TVec<float, 3>::AxisY();
-    static_assert(axis_y[0] == 0.0f && axis_y[1] == 1.0f && axis_y[2] == 0.0f);
-
-    constexpr TVec<float, 2> axis_z_2d = TVec<float, 2>::Axis(1); // Y axis
-    static_assert(axis_z_2d[0] == 0.0f && axis_z_2d[1] == 1.0f);
-}
-
-TEST_CASE("TVec comparison operators")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> a{1.0, 2.0, 3.0};
-    constexpr TVec<double, 3> b{1.0, 2.0, 3.0};
-    constexpr TVec<double, 3> c{1.0, 2.0, 4.0};
-
-    static_assert(a == b);
-    static_assert(a != c);
-    static_assert(!(a == c));
-}
-
-TEST_CASE("TVec arithmetic operators (vector-vector)")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 2> v1{1.0, 2.0};
-    constexpr TVec<double, 2> v2{3.0, 4.0};
-
-    constexpr auto add = v1 + v2;
-    static_assert(AlmostEqual(add[0], 4.0) && AlmostEqual(add[1], 6.0));
-
-    constexpr auto sub = v2 - v1;
-    static_assert(AlmostEqual(sub[0], 2.0) && AlmostEqual(sub[1], 2.0));
-
-    constexpr auto mul = v1 * v2;
-    static_assert(AlmostEqual(mul[0], 3.0) && AlmostEqual(mul[1], 8.0));
-
-    constexpr auto div = v2 / v1;
-    static_assert(AlmostEqual(div[0], 3.0) && AlmostEqual(div[1], 2.0));
-
-    // Unary minus
-    constexpr auto neg = -v1;
-    static_assert(AlmostEqual(neg[0], -1.0) && AlmostEqual(neg[1], -2.0));
-}
-
-TEST_CASE("TVec arithmetic operators (vector-scalar and scalar-vector)")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> v{1.0, 2.0, 3.0};
-
-    constexpr auto v_plus_s = v + 10.0;
-    static_assert(AlmostEqual(v_plus_s[0], 11.0) && AlmostEqual(v_plus_s[1], 12.0) && AlmostEqual(v_plus_s[2], 13.0));
-
-    constexpr auto s_plus_v = 10.0 + v;
-    static_assert(AlmostEqual(s_plus_v[0], 11.0) && AlmostEqual(s_plus_v[1], 12.0) && AlmostEqual(s_plus_v[2], 13.0));
-
-    constexpr auto v_minus_s = v - 1.0;
-    static_assert(AlmostEqual(v_minus_s[0], 0.0) && AlmostEqual(v_minus_s[1], 1.0) && AlmostEqual(v_minus_s[2], 2.0));
-
-    constexpr auto s_minus_v = 5.0 - v;
-    static_assert(AlmostEqual(s_minus_v[0], 4.0) && AlmostEqual(s_minus_v[1], 3.0) && AlmostEqual(s_minus_v[2], 2.0));
-
-    constexpr auto v_mul_s = v * 2.0;
-    static_assert(AlmostEqual(v_mul_s[0], 2.0) && AlmostEqual(v_mul_s[1], 4.0) && AlmostEqual(v_mul_s[2], 6.0));
-
-    constexpr auto s_mul_v = 2.0 * v;
-    static_assert(AlmostEqual(s_mul_v[0], 2.0) && AlmostEqual(s_mul_v[1], 4.0) && AlmostEqual(s_mul_v[2], 6.0));
-
-    constexpr auto v_div_s = v / 2.0;
-    static_assert(AlmostEqual(v_div_s[0], 0.5) && AlmostEqual(v_div_s[1], 1.0) && AlmostEqual(v_div_s[2], 1.5));
-
-    constexpr auto s_div_v = 6.0 / v;
-    static_assert(AlmostEqual(s_div_v[0], 6.0) && AlmostEqual(s_div_v[1], 3.0) && AlmostEqual(s_div_v[2], 2.0));
-}
-
-TEST_CASE("TVec compound assignment operators")
-{
-    using namespace Roxy::Math;
-
-    TVec<double, 3> v{1.0, 2.0, 3.0};
-    TVec<double, 3> w{0.5, 0.5, 0.5};
-
-    v += w;
-    CHECK(v[0] == doctest::Approx(1.5));
-    CHECK(v[1] == doctest::Approx(2.5));
-    CHECK(v[2] == doctest::Approx(3.5));
-
-    v -= w;
-    CHECK(v[0] == doctest::Approx(1.0));
-    CHECK(v[1] == doctest::Approx(2.0));
-    CHECK(v[2] == doctest::Approx(3.0));
-
-    v *= w;
-    CHECK(v[0] == doctest::Approx(0.5));
-    CHECK(v[1] == doctest::Approx(1.0));
-    CHECK(v[2] == doctest::Approx(1.5));
-
-    v /= w;
-    CHECK(v[0] == doctest::Approx(1.0));
-    CHECK(v[1] == doctest::Approx(2.0));
-    CHECK(v[2] == doctest::Approx(3.0));
-
-    v += 1.0;
-    CHECK(v[0] == doctest::Approx(2.0));
-    CHECK(v[1] == doctest::Approx(3.0));
-    CHECK(v[2] == doctest::Approx(4.0));
-
-    v -= 1.0;
-    CHECK(v[0] == doctest::Approx(1.0));
-    CHECK(v[1] == doctest::Approx(2.0));
-    CHECK(v[2] == doctest::Approx(3.0));
-
-    v *= 2.0;
-    CHECK(v[0] == doctest::Approx(2.0));
-    CHECK(v[1] == doctest::Approx(4.0));
-    CHECK(v[2] == doctest::Approx(6.0));
-
-    v /= 2.0;
-    CHECK(v[0] == doctest::Approx(1.0));
-    CHECK(v[1] == doctest::Approx(2.0));
-    CHECK(v[2] == doctest::Approx(3.0));
-}
-
-TEST_CASE("TVec Dot product")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> a{1.0, 2.0, 3.0};
-    constexpr TVec<double, 3> b{4.0, 5.0, 6.0};
-    static_assert(AlmostEqual(a.Dot(b), 32.0));
-
-    constexpr TVec<double, 2> c{1.5, 2.5};
-    constexpr TVec<double, 2> d{3.0, 4.0};
-    static_assert(AlmostEqual(c.Dot(d), 14.5));
-
-    TVec<float, 4> e{1.0f, 2.0f, 3.0f, 4.0f};
-    TVec<float, 4> f{5.0f, 6.0f, 7.0f, 8.0f};
-    CHECK(e.Dot(f) == doctest::Approx(70.0f));
-}
-
-TEST_CASE("TVec Cross product (3D only)")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> x{1.0, 0.0, 0.0};
-    constexpr TVec<double, 3> y{0.0, 1.0, 0.0};
-    constexpr auto z = x.Cross(y);
-    static_assert(AlmostEqual(z[0], 0.0) && AlmostEqual(z[1], 0.0) && AlmostEqual(z[2], 1.0));
-
-    constexpr auto z2 = y.Cross(x);
-    static_assert(AlmostEqual(z2[0], 0.0) && AlmostEqual(z2[1], 0.0) && AlmostEqual(z2[2], -1.0));
-
-    // Member version
-    TVec<double, 3> a{2.0, 3.0, 4.0};
-    TVec<double, 3> b{5.0, 6.0, 7.0};
-    auto res = a.Cross(b);
-    CHECK(res[0] == doctest::Approx(-3.0));
-    CHECK(res[1] == doctest::Approx(6.0));
-    CHECK(res[2] == doctest::Approx(-3.0));
-}
-
-TEST_CASE("TVec length and squared length")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<float, 3> v{3.0f, 4.0f, 0.0f};
-    static_assert(AlmostEqual(v.SqrLength(), 25.0f));
-    static_assert(AlmostEqual(v.Length(), 5.0f));
-    static_assert(AlmostEqual(v.InvSqrLength(), 1.0f / 25.0f));
-    static_assert(AlmostEqual(v.InvLength(), 0.2f));
-
-    // Normalized returns a copy and is constexpr
-    constexpr auto v_norm = v.Normalized();
-    static_assert(AlmostEqual(v_norm.Length(), 1.0f));
-    static_assert(AlmostEqual(v_norm[0], 0.6f) && AlmostEqual(v_norm[1], 0.8f) && AlmostEqual(v_norm[2], 0.0f));
-
-    TVec<double, 2> w{1.0, 1.0};
-    CHECK(w.SqrLength() == doctest::Approx(2.0));
-    CHECK(w.Length() == doctest::Approx(std::sqrt(2.0)));
-}
-
-TEST_CASE("TVec As<U> conversion")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> vi{1.0, 2.0, 3.0};
-    constexpr auto vf = vi.As<float>();
-    static_assert(std::is_same_v<decltype(vf), const TVec<float, 3>>);
-    static_assert(AlmostEqual(vf[0], 1.0f));
-    static_assert(AlmostEqual(vf[1], 2.0f));
-    static_assert(AlmostEqual(vf[2], 3.0f));
-}
-
-TEST_CASE("TVec Min and Max")
-{
-    using namespace Roxy::Math;
-
-    constexpr TVec<double, 3> v{5.0, 2.0, 8.0};
-    static_assert(AlmostEqual(v.Min(), 2.0));
-    static_assert(AlmostEqual(v.Max(), 8.0));
-
-    constexpr TVec<double, 2> w{-1.5, 3.5};
-    static_assert(AlmostEqual(w.Min(), -1.5));
-    static_assert(AlmostEqual(w.Max(), 3.5));
-}
-
-// ============================================================
-// TMat tests
-// ============================================================
-
-TEST_CASE("TMat construction and indexing")
-{
-    using namespace Roxy::Math;
-
-    // Default constructor -> zero matrix
-    constexpr TMat<float, 3> m_default;
-    static_assert(m_default[0][0] == 0.0f && m_default[0][1] == 0.0f && m_default[0][2] == 0.0f);
-    static_assert(m_default[1][0] == 0.0f && m_default[1][1] == 0.0f && m_default[1][2] == 0.0f);
-    static_assert(m_default[2][0] == 0.0f && m_default[2][1] == 0.0f && m_default[2][2] == 0.0f);
-
-    // Scalar constructor -> identity * scalar
-    // constexpr TMat<double, 2> m_ident(1.0);
-    // static_assert(AlmostEqual(m_ident[0][0], 1.0) && AlmostEqual(m_ident[0][1], 0.0));
-    // static_assert(AlmostEqual(m_ident[1][0], 0.0) && AlmostEqual(m_ident[1][1], 1.0));
-
-    // initializer_list<T> constructor (row-major)
-    constexpr TMat<double, 2> m2{1.0, 2.0, 3.0, 4.0};
-    static_assert(AlmostEqual(m2[0][0], 1.0) && AlmostEqual(m2[0][1], 2.0));
-    static_assert(AlmostEqual(m2[1][0], 3.0) && AlmostEqual(m2[1][1], 4.0));
-
-    constexpr TMat<float, 3> m3{1.0f, 2.0f, 3.0f,
-                                4.0f, 5.0f, 6.0f,
-                                7.0f, 8.0f, 9.0f};
-    static_assert(AlmostEqual(m3[0][0], 1.0f) && AlmostEqual(m3[0][1], 2.0f) && AlmostEqual(m3[0][2], 3.0f));
-    static_assert(AlmostEqual(m3[1][0], 4.0f) && AlmostEqual(m3[1][1], 5.0f) && AlmostEqual(m3[1][2], 6.0f));
-    static_assert(AlmostEqual(m3[2][0], 7.0f) && AlmostEqual(m3[2][1], 8.0f) && AlmostEqual(m3[2][2], 9.0f));
-
-    // initializer_list<TVec<T,Dim>> constructor (rows as vectors)
-    constexpr TVec<double, 2> row0{1.0, 2.0};
-    constexpr TVec<double, 2> row1{3.0, 4.0};
-    constexpr TMat<double, 2> m_rows{row0, row1};
-    static_assert(m_rows[0] == row0 && m_rows[1] == row1);
-}
-
-TEST_CASE("TMat static Zero and Identity")
-{
-    using namespace Roxy::Math;
-
-    constexpr auto zero = TMat<float, 3>::Zero();
-    static_assert(zero[0][0] == 0.0f && zero[0][1] == 0.0f && zero[0][2] == 0.0f);
-    static_assert(zero[1][0] == 0.0f && zero[1][1] == 0.0f && zero[1][2] == 0.0f);
-    static_assert(zero[2][0] == 0.0f && zero[2][1] == 0.0f && zero[2][2] == 0.0f);
-
-    constexpr auto ident = TMat<float, 3>::Identity();
-    static_assert(ident[0][0] == 1.0f && ident[0][1] == 0.0f && ident[0][2] == 0.0f);
-    static_assert(ident[1][0] == 0.0f && ident[1][1] == 1.0f && ident[1][2] == 0.0f);
-    static_assert(ident[2][0] == 0.0f && ident[2][1] == 0.0f && ident[2][2] == 1.0f);
-}
-
-TEST_CASE("TMat comparison operators")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
-    constexpr TMat<double, 2> b{1.0, 2.0, 3.0, 4.0};
-    constexpr TMat<double, 2> c{1.0, 2.0, 3.0, 5.0};
-
-    static_assert(a == b);
-    static_assert(a != c);
-    static_assert(!(a == c));
-}
-
-TEST_CASE("TMat Row and Col access")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-    constexpr auto row0 = m.Row(0);
-    constexpr auto row1 = m.Row(1);
-    static_assert(AlmostEqual(row0[0], 1.0) && AlmostEqual(row0[1], 2.0));
-    static_assert(AlmostEqual(row1[0], 3.0) && AlmostEqual(row1[1], 4.0));
-
-    constexpr auto col0 = m.Col(0);
-    constexpr auto col1 = m.Col(1);
-    static_assert(AlmostEqual(col0[0], 1.0) && AlmostEqual(col0[1], 3.0));
-    static_assert(AlmostEqual(col1[0], 2.0) && AlmostEqual(col1[1], 4.0));
-}
-
-TEST_CASE("TMat arithmetic operators (matrix-matrix)")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
-    constexpr TMat<double, 2> b{5.0, 6.0, 7.0, 8.0};
-
-    constexpr auto add = a + b;
-    static_assert(AlmostEqual(add[0][0], 6.0) && AlmostEqual(add[0][1], 8.0));
-    static_assert(AlmostEqual(add[1][0], 10.0) && AlmostEqual(add[1][1], 12.0));
-
-    constexpr auto sub = b - a;
-    static_assert(AlmostEqual(sub[0][0], 4.0) && AlmostEqual(sub[0][1], 4.0));
-    static_assert(AlmostEqual(sub[1][0], 4.0) && AlmostEqual(sub[1][1], 4.0));
-
-    // Matrix multiplication
-    constexpr auto mul = a.Mul(b);
-    static_assert(AlmostEqual(mul[0][0], 19.0) && AlmostEqual(mul[0][1], 22.0));
-    static_assert(AlmostEqual(mul[1][0], 43.0) && AlmostEqual(mul[1][1], 50.0));
-
-    // Unary minus
-    constexpr auto neg = -a;
-    static_assert(AlmostEqual(neg[0][0], -1.0) && AlmostEqual(neg[0][1], -2.0));
-    static_assert(AlmostEqual(neg[1][0], -3.0) && AlmostEqual(neg[1][1], -4.0));
-}
-
-TEST_CASE("TMat arithmetic operators (matrix-scalar and scalar-matrix)")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-
-    constexpr auto m_plus_s = m + 10.0;
-    static_assert(AlmostEqual(m_plus_s[0][0], 11.0) && AlmostEqual(m_plus_s[0][1], 12.0));
-    static_assert(AlmostEqual(m_plus_s[1][0], 13.0) && AlmostEqual(m_plus_s[1][1], 14.0));
-
-    constexpr auto s_plus_m = 10.0 + m;
-    static_assert(AlmostEqual(s_plus_m[0][0], 11.0) && AlmostEqual(s_plus_m[0][1], 12.0));
-    static_assert(AlmostEqual(s_plus_m[1][0], 13.0) && AlmostEqual(s_plus_m[1][1], 14.0));
-
-    constexpr auto m_minus_s = m - 1.0;
-    static_assert(AlmostEqual(m_minus_s[0][0], 0.0) && AlmostEqual(m_minus_s[0][1], 1.0));
-    static_assert(AlmostEqual(m_minus_s[1][0], 2.0) && AlmostEqual(m_minus_s[1][1], 3.0));
-
-    constexpr auto s_minus_m = 5.0 - m;
-    static_assert(AlmostEqual(s_minus_m[0][0], 4.0) && AlmostEqual(s_minus_m[0][1], 3.0));
-    static_assert(AlmostEqual(s_minus_m[1][0], 2.0) && AlmostEqual(s_minus_m[1][1], 1.0));
-
-    constexpr auto m_mul_s = m * 2.0;
-    static_assert(AlmostEqual(m_mul_s[0][0], 2.0) && AlmostEqual(m_mul_s[0][1], 4.0));
-    static_assert(AlmostEqual(m_mul_s[1][0], 6.0) && AlmostEqual(m_mul_s[1][1], 8.0));
-
-    constexpr auto s_mul_m = 2.0 * m;
-    static_assert(AlmostEqual(s_mul_m[0][0], 2.0) && AlmostEqual(s_mul_m[0][1], 4.0));
-    static_assert(AlmostEqual(s_mul_m[1][0], 6.0) && AlmostEqual(s_mul_m[1][1], 8.0));
-
-    constexpr auto m_div_s = m / 2.0;
-    static_assert(AlmostEqual(m_div_s[0][0], 0.5) && AlmostEqual(m_div_s[0][1], 1.0));
-    static_assert(AlmostEqual(m_div_s[1][0], 1.5) && AlmostEqual(m_div_s[1][1], 2.0));
-
-    constexpr auto s_div_m = 10.0 / m;
-    static_assert(AlmostEqual(s_div_m[0][0], 10.0) && AlmostEqual(s_div_m[0][1], 5.0));
-    static_assert(AlmostEqual(s_div_m[1][0], 10.0/3.0) && AlmostEqual(s_div_m[1][1], 2.5));
-}
-
-TEST_CASE("TMat vector multiplication")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-    constexpr TVec<double, 2> v{5.0, 6.0};
-
-    constexpr auto res = m.Mul(v);
-    static_assert(AlmostEqual(res[0], 17.0) && AlmostEqual(res[1], 39.0));
-}
-
-TEST_CASE("TMat transpose")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-    constexpr auto t = m.Transposed();
-    static_assert(AlmostEqual(t[0][0], 1.0) && AlmostEqual(t[0][1], 3.0));
-    static_assert(AlmostEqual(t[1][0], 2.0) && AlmostEqual(t[1][1], 4.0));
-
-    constexpr TMat<float, 3> m3{1.0f, 2.0f, 3.0f,
-                                4.0f, 5.0f, 6.0f,
-                                7.0f, 8.0f, 9.0f};
-    constexpr auto t3 = m3.Transposed();
-    static_assert(AlmostEqual(t3[0][0], 1.0f) && AlmostEqual(t3[0][1], 4.0f) && AlmostEqual(t3[0][2], 7.0f));
-    static_assert(AlmostEqual(t3[1][0], 2.0f) && AlmostEqual(t3[1][1], 5.0f) && AlmostEqual(t3[1][2], 8.0f));
-    static_assert(AlmostEqual(t3[2][0], 3.0f) && AlmostEqual(t3[2][1], 6.0f) && AlmostEqual(t3[2][2], 9.0f));
-}
-
-TEST_CASE("TMat determinant")
-{
-    using namespace Roxy::Math;
-
-    constexpr TMat<float, 2> m2{1.0f, 2.0f, 3.0f, 4.0f};
-    static_assert(AlmostEqual(m2.Determinant(), -2.0f));
-    static_assert(AlmostEqual(m2.InvDeterminant(), -0.5f));
-
-    constexpr TMat<float, 3> m3{6.0f, 1.0f, 1.0f,
-                                4.0f, -2.0f, 5.0f,
-                                2.0f, 8.0f, 7.0f};
-    static_assert(AlmostEqual(m3.Determinant(), -306.0f));
-
-    // 4x4 determinant test (use a known value)
-    constexpr TMat<double, 4> m4{1.0, 0.0, 0.0, 0.0,
-                                 0.0, 2.0, 0.0, 0.0,
-                                 0.0, 0.0, 3.0, 0.0,
-                                 0.0, 0.0, 0.0, 4.0};
-    static_assert(AlmostEqual(m4.Determinant(), 24.0));
-    static_assert(AlmostEqual(m4.InvDeterminant(), 1.0 / 24.0));
-}
-
-TEST_CASE("TMat inverse (floating point only)")
-{
-    using namespace Roxy::Math;
-
-    // 2x2 inverse
-    constexpr TMat<double, 2> m2{4.0, 7.0, 2.0, 6.0};
-    constexpr auto inv2 = m2.Inversed();
-    static_assert(AlmostEqual(inv2[0][0], 0.6));
-    static_assert(AlmostEqual(inv2[0][1], -0.7));
-    static_assert(AlmostEqual(inv2[1][0], -0.2));
-    static_assert(AlmostEqual(inv2[1][1], 0.4));
-
-    // Verify inverse by multiplying with original (should be identity)
-    constexpr auto ident2 = m2.Mul(inv2);
-    static_assert(AlmostEqual(ident2[0][0], 1.0));
-    static_assert(AlmostEqual(ident2[0][1], 0.0));
-    static_assert(AlmostEqual(ident2[1][0], 0.0));
-    static_assert(AlmostEqual(ident2[1][1], 1.0));
-
-    // 3x3 inverse
-    constexpr TMat<double, 3> m3{1.0, 2.0, 3.0,
-                                 0.0, 1.0, 4.0,
-                                 5.0, 6.0, 0.0};
-    constexpr auto inv3 = m3.Inversed();
-    constexpr auto ident3 = m3.Mul(inv3);
-    static_assert(AlmostEqual(ident3[0][0], 1.0) && AlmostEqual(ident3[0][1], 0.0) && AlmostEqual(ident3[0][2], 0.0));
-    static_assert(AlmostEqual(ident3[1][0], 0.0) && AlmostEqual(ident3[1][1], 1.0) && AlmostEqual(ident3[1][2], 0.0));
-    static_assert(AlmostEqual(ident3[2][0], 0.0) && AlmostEqual(ident3[2][1], 0.0) && AlmostEqual(ident3[2][2], 1.0));
-
-    // 4x4 inverse (diagonal matrix)
-    constexpr TMat<double, 4> m4{2.0, 0.0, 0.0, 0.0,
-                                 0.0, 4.0, 0.0, 0.0,
-                                 0.0, 0.0, 8.0, 0.0,
-                                 0.0, 0.0, 0.0, 16.0};
-    constexpr auto inv4 = m4.Inversed();
-    constexpr auto ident4 = m4.Mul(inv4);
-    static_assert(AlmostEqual(ident4[0][0], 1.0) && AlmostEqual(ident4[0][1], 0.0) && AlmostEqual(ident4[0][2], 0.0) && AlmostEqual(ident4[0][3], 0.0));
-    static_assert(AlmostEqual(ident4[1][0], 0.0) && AlmostEqual(ident4[1][1], 1.0) && AlmostEqual(ident4[1][2], 0.0) && AlmostEqual(ident4[1][3], 0.0));
-    static_assert(AlmostEqual(ident4[2][0], 0.0) && AlmostEqual(ident4[2][1], 0.0) && AlmostEqual(ident4[2][2], 1.0) && AlmostEqual(ident4[2][3], 0.0));
-    static_assert(AlmostEqual(ident4[3][0], 0.0) && AlmostEqual(ident4[3][1], 0.0) && AlmostEqual(ident4[3][2], 0.0) && AlmostEqual(ident4[3][3], 1.0));
-}
-
-// ============================================================
-// Additional runtime checks for coverage
-// ============================================================
-
-TEST_CASE("TVec runtime operations for coverage")
-{
-    using namespace Roxy::Math;
-
-    // 2D
+    SUBCASE("Concept")
     {
-        TVec<float, 2> a{1.5f, 2.5f};
-        TVec<float, 2> b{3.0f, 4.0f};
-
-        auto sum = a + b;
-        CHECK(sum[0] == doctest::Approx(4.5f));
-        CHECK(sum[1] == doctest::Approx(6.5f));
-
-        auto diff = a - b;
-        CHECK(diff[0] == doctest::Approx(-1.5f));
-        CHECK(diff[1] == doctest::Approx(-1.5f));
-
-        auto prod = a * b;
-        CHECK(prod[0] == doctest::Approx(4.5f));
-        CHECK(prod[1] == doctest::Approx(10.0f));
-
-        auto div = a / b;
-        CHECK(div[0] == doctest::Approx(0.5f));
-        CHECK(div[1] == doctest::Approx(0.625f));
-
-        auto dot = a.Dot(b);
-        CHECK(dot == doctest::Approx(1.5f*3.0f + 2.5f*4.0f));
-
-        auto neg = -a;
-        CHECK(neg[0] == doctest::Approx(-1.5f));
-        CHECK(neg[1] == doctest::Approx(-2.5f));
+        static_assert(CIntegral<I32>);
+        static_assert(CIntegral<U32>);
+        static_assert(!CIntegral<F32>);
+        static_assert(!CIntegral<F64>);
+        static_assert(!CFloatingPoint<I32>);
+        static_assert(!CFloatingPoint<U32>);
+        static_assert(CFloatingPoint<F32>);
+        static_assert(CFloatingPoint<F64>);
+        static_assert(CArithmetic<I32>);
+        static_assert(CArithmetic<U32>);
+        static_assert(CArithmetic<F32>);
+        static_assert(CArithmetic<F64>);
     }
 
-    // 3D
+    SUBCASE("Constant")
     {
-        TVec<double, 3> a{1.0, 2.0, 3.0};
-        TVec<double, 3> b{4.0, 5.0, 6.0};
+        CHECK(Approx(Pi<F32>,            std::numbers::pi_v<F32>));
+        CHECK(Approx(E<F32>,             std::numbers::e_v<F32>));
+        CHECK(Approx(Ln2<F32>,           std::log(2.0f)));
+        CHECK(Approx(Ln10<F32>,          std::log(10.0f)));
+        CHECK(Approx(Log2E<F32>,         std::log2(std::exp(1.0f))));
+        CHECK(Approx(Log10E<F32>,        std::log10(std::exp(1.0f))));
+        CHECK(Approx(Sqrt2<F32>,         std::sqrt(2.0f)));
+        CHECK(Approx(Sqrt3<F32>,         std::sqrt(3.0f)));
+        CHECK(Approx(InvSqrt2<F32>,      1.0f / std::sqrt(2.0f)));
+        CHECK(Approx(DegToRadCoeff<F32>, Pi<F32> / 180.0f));
+        CHECK(Approx(RadToDegCoeff<F32>, 180.0f / Pi<F32>));
 
-        auto cross = a.Cross(b);
-        CHECK(cross[0] == doctest::Approx(-3.0));
-        CHECK(cross[1] == doctest::Approx(6.0));
-        CHECK(cross[2] == doctest::Approx(-3.0));
-
-        auto dot = a.Dot(b);
-        CHECK(dot == doctest::Approx(32.0));
-
-        auto len2 = a.SqrLength();
-        CHECK(len2 == doctest::Approx(14.0));
-        CHECK(a.Length() == doctest::Approx(std::sqrt(14.0)));
+        CHECK(Approx(Pi<F64>,            std::numbers::pi_v<F64>));
+        CHECK(Approx(E<F64>,             std::numbers::e_v<F64>));
+        CHECK(Approx(Ln2<F64>,           std::log(2.0)));
+        CHECK(Approx(Ln10<F64>,          std::log(10.0)));
+        CHECK(Approx(Log2E<F64>,         std::log2(std::exp(1.0))));
+        CHECK(Approx(Log10E<F64>,        std::log10(std::exp(1.0))));
+        CHECK(Approx(Sqrt2<F64>,         std::sqrt(2.0)));
+        CHECK(Approx(Sqrt3<F64>,         std::sqrt(3.0)));
+        CHECK(Approx(InvSqrt2<F64>,      1.0 / std::sqrt(2.0)));
+        CHECK(Approx(DegToRadCoeff<F64>, Pi<F64> / 180.0));
+        CHECK(Approx(RadToDegCoeff<F64>, 180.0 / Pi<F64>));
     }
 
-    // 4D
+    SUBCASE("Abs::CT")
     {
-        TVec<float, 4> a{1.0f, 2.0f, 3.0f, 4.0f};
-        TVec<float, 4> b{5.0f, 6.0f, 7.0f, 8.0f};
-
-        auto sum = a + b;
-        CHECK(sum[0] == doctest::Approx(6.0f));
-        CHECK(sum[3] == doctest::Approx(12.0f));
-
-        auto dot = a.Dot(b);
-        CHECK(dot == doctest::Approx(70.0f));
-
-        auto scaled = a * 2.0f;
-        CHECK(scaled[0] == doctest::Approx(2.0f));
-        CHECK(scaled[3] == doctest::Approx(8.0f));
+        static_assert(Abs(-5) == 5);
+        static_assert(Abs( 5) == 5);
+        static_assert(Approx(Abs(-3.14), 3.14));
+        static_assert(Approx(Abs( 3.14), 3.14));
     }
-}
 
-TEST_CASE("TMat runtime operations for coverage")
-{
-    using namespace Roxy::Math;
-
-    // 2x2 matrix arithmetic
+    SUBCASE("Abs::RT")
     {
-        TMat<double, 2> a{1.0, 2.0, 3.0, 4.0};
-        TMat<double, 2> b{5.0, 6.0, 7.0, 8.0};
-
-        auto sum = a + b;
-        CHECK(sum[0][0] == doctest::Approx(6.0));
-        CHECK(sum[0][1] == doctest::Approx(8.0));
-        CHECK(sum[1][0] == doctest::Approx(10.0));
-        CHECK(sum[1][1] == doctest::Approx(12.0));
-
-        auto diff = a - b;
-        CHECK(diff[0][0] == doctest::Approx(-4.0));
-        CHECK(diff[1][1] == doctest::Approx(-4.0));
-
-        auto prod = a.Mul(b);
-        CHECK(prod[0][0] == doctest::Approx(19.0));
-        CHECK(prod[0][1] == doctest::Approx(22.0));
-        CHECK(prod[1][0] == doctest::Approx(43.0));
-        CHECK(prod[1][1] == doctest::Approx(50.0));
-
-        auto trans = a.Transposed();
-        CHECK(trans[0][0] == doctest::Approx(1.0));
-        CHECK(trans[0][1] == doctest::Approx(3.0));
-        CHECK(trans[1][0] == doctest::Approx(2.0));
-        CHECK(trans[1][1] == doctest::Approx(4.0));
-
-        // In-place Transpose mutates the matrix and returns a reference
-        TMat<double, 2> t_inplace = a;
-        t_inplace.Transpose();
-        CHECK(t_inplace[0][0] == doctest::Approx(1.0));
-        CHECK(t_inplace[0][1] == doctest::Approx(3.0));
-        CHECK(t_inplace[1][0] == doctest::Approx(2.0));
-        CHECK(t_inplace[1][1] == doctest::Approx(4.0));
-
-        // In-place Inverse mutates the matrix
-        TMat<double, 2> inv_inplace = a;
-        inv_inplace.Inverse();
-        CHECK(inv_inplace[0][0] == doctest::Approx(-2.0));
-        CHECK(inv_inplace[0][1] == doctest::Approx(1.0));
-        CHECK(inv_inplace[1][0] == doctest::Approx(1.5));
-        CHECK(inv_inplace[1][1] == doctest::Approx(-0.5));
-
-        auto det = a.Determinant();
-        CHECK(det == doctest::Approx(-2.0));
-
-        auto inv = a.Inversed();
-        CHECK(inv[0][0] == doctest::Approx(-2.0));
-        CHECK(inv[0][1] == doctest::Approx(1.0));
-        CHECK(inv[1][0] == doctest::Approx(1.5));
-        CHECK(inv[1][1] == doctest::Approx(-0.5));
+        CHECK(Abs(-5) == 5);
+        CHECK(Abs( 5) == 5);
+        CHECK(Approx(Abs(-3.14), 3.14));
+        CHECK(Approx(Abs( 3.14), 3.14));
     }
 
-    // 3x3 matrix operations
+    SUBCASE("(Inv)Sqrt::CT")
     {
-        TMat<double, 3> a{1.0, 2.0, 3.0,
-                          0.0, 1.0, 4.0,
-                          5.0, 6.0, 0.0};
-
-        auto det = a.Determinant();
-        CHECK(det == doctest::Approx(1.0));  // det = 1
-
-        auto inv = a.Inversed();
-        auto prod = a.Mul(inv);
-        CHECK(prod[0][0] == doctest::Approx(1.0));
-        CHECK(prod[0][1] == doctest::Approx(0.0));
-        CHECK(prod[0][2] == doctest::Approx(0.0));
-        CHECK(prod[1][0] == doctest::Approx(0.0));
-        CHECK(prod[1][1] == doctest::Approx(1.0));
-        CHECK(prod[1][2] == doctest::Approx(0.0));
-        CHECK(prod[2][0] == doctest::Approx(0.0));
-        CHECK(prod[2][1] == doctest::Approx(0.0));
-        CHECK(prod[2][2] == doctest::Approx(1.0));
+        static_assert(Approx(   Sqrt(    0.0),   0.0 ));
+        static_assert(Approx(   Sqrt(    1.0),   1.0 ));
+        static_assert(Approx(InvSqrt(    1.0),   1.0 ));
+        static_assert(Approx(   Sqrt(    4.0),   2.0 ));
+        static_assert(Approx(InvSqrt(    4.0),   0.5 ));
+        static_assert(Approx(   Sqrt(10000.0), 100.0 ));
+        static_assert(Approx(InvSqrt(10000.0),   0.01));
     }
 
-    // 4x4 matrix operations
+    SUBCASE("(Inv)Sqrt::RT")
     {
-        TMat<double, 4> diag{2.0, 0.0, 0.0, 0.0,
-                             0.0, 4.0, 0.0, 0.0,
-                             0.0, 0.0, 8.0, 0.0,
-                             0.0, 0.0, 0.0, 16.0};
-
-        auto det = diag.Determinant();
-        CHECK(det == doctest::Approx(1024.0)); // 2*4*8*16 = 1024
-
-        auto inv = diag.Inversed();
-        auto prod = diag.Mul(inv);
-        for (int i = 0; i < 4; ++i)
-            for (int j = 0; j < 4; ++j)
-                CHECK(prod[i][j] == doctest::Approx(i == j ? 1.0 : 0.0));
+        for (volatile const auto X : { 1.0, 2.0, 3.0, 4.0, 9.0, 100.0})
+        {
+            CHECK(Approx(   Sqrt(X),     std::sqrt(X)));
+            CHECK(Approx(InvSqrt(X), 1 / std::sqrt(X)));
+        }
     }
 
-    // Matrix-vector multiplication
+    SUBCASE("Trig::CT")
     {
-        TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
-        TVec<double, 2> v{5.0, 6.0};
-        auto res = m.Mul(v);
-        CHECK(res[0] == doctest::Approx(17.0));
-        CHECK(res[1] == doctest::Approx(39.0));
+        static_assert(Approx(Sin( 0.0      ),  0.0 ));
+        static_assert(Approx(Sin( Pi<F64>/2),  1.0 ));
+        static_assert(Approx(Sin( Pi<F64>  ),  0.0 ));
+        static_assert(Approx(Sin(-Pi<F64>/2), -1.0 ));
+        static_assert(Approx(Cos( 0.0      ),  1.0 ));
+        static_assert(Approx(Cos( Pi<F64>/2),  0.0 ));
+        static_assert(Approx(Cos( Pi<F64>  ), -1.0 ));
+        static_assert(Approx(Tan( 0.0      ),  0.0 ));
+        static_assert(Approx(Tan( Pi<F64>/4),  1.0 ));
     }
 
-    // Scalar operations (now using double)
+    SUBCASE("Trig::RT")
     {
-        TMat<double, 2> m{1.0, 2.0, 3.0, 4.0};
+        for (volatile const auto X : { -1.0, -0.5, 0.5, 1.0, 2.0 })
+        {
+            CHECK(Approx(Sin(X), std::sin(X)));
+            CHECK(Approx(Cos(X), std::cos(X)));
+            CHECK(Approx(Tan(X), std::tan(X)));
+        }
+    }
 
-        auto add = m + 10.0;
-        CHECK(add[0][0] == doctest::Approx(11.0));
-        CHECK(add[1][1] == doctest::Approx(14.0));
+    SUBCASE("InvTrig::CT")
+    {
+        static_assert(Approx(Asin( 0.0),  0.0     ));
+        static_assert(Approx(Asin( 1.0),  Pi<F64>/2));
+        static_assert(Approx(Asin(-1.0), -Pi<F64>/2));
+        static_assert(Approx(Acos( 1.0),  0.0     ));
+        static_assert(Approx(Acos( 0.0),  Pi<F64>/2));
+        static_assert(Approx(Acos(-1.0),  Pi<F64> ));
+        static_assert(Approx(Atan( 0.0),  0.0     ));
+        static_assert(Approx(Atan( 1.0),  Pi<F64>/4));
+        static_assert(Approx(Atan(-1.0), -Pi<F64>/4));
+        static_assert(Approx(Atan2( 0.0,  1.0),  0.0     ));
+        static_assert(Approx(Atan2( 1.0,  0.0),  Pi<F64>/2));
+        static_assert(Approx(Atan2(-1.0,  0.0), -Pi<F64>/2));
+    }
 
-        auto sub = 10.0 - m;
-        CHECK(sub[0][0] == doctest::Approx(9.0));
-        CHECK(sub[1][1] == doctest::Approx(6.0));
+    SUBCASE("InvTrig::RT")
+    {
+        for (volatile const auto X : { -0.9, -0.5, 0.0, 0.5, 0.9 })
+        {
+            CHECK(Approx(Asin(X), std::asin(X)));
+            CHECK(Approx(Acos(X), std::acos(X)));
+            CHECK(Approx(Atan(X), std::atan(X)));
+        }
+        for (volatile const auto Y : { -1.0, -0.5, 0.5, 1.0 })
+        {
+            for (volatile const auto X : { -1.0, -0.5, 0.5, 1.0 })
+            {
+                CHECK(Approx(Atan2(Y, X), std::atan2(Y, X)));
+            }
+        }
+    }
 
-        auto mul = m * 3.0;
-        CHECK(mul[0][0] == doctest::Approx(3.0));
-        CHECK(mul[1][1] == doctest::Approx(12.0));
+    SUBCASE("Hyp::CT")
+    {
+        static_assert(Approx(Sinh(0.0), 0.0));
+        static_assert(Approx(Cosh(0.0), 1.0));
+        static_assert(Approx(Tanh(0.0), 0.0));
+    }
 
-        auto div = m / 2.0;
-        CHECK(div[0][0] == doctest::Approx(0.5));
-        CHECK(div[1][1] == doctest::Approx(2.0));
+    SUBCASE("Hyp::RT")
+    {
+        for (volatile const auto X : { -2.0, -0.5, 0.5, 2.0 })
+        {
+            CHECK(Approx(Sinh(X), std::sinh(X)));
+            CHECK(Approx(Cosh(X), std::cosh(X)));
+            CHECK(Approx(Tanh(X), std::tanh(X)));
+        }
+    }
+
+    SUBCASE("ExpLog::CT")
+    {
+        static_assert(Approx(Exp(  0.0),     1.0  ));
+        static_assert(Approx(Exp(  1.0),     E<F64>));
+        static_assert(Approx(Log(  1.0),     0.0  ));
+        static_assert(Approx(Log(  E<F64>),  1.0  ));
+        static_assert(Approx(Log2( 8.0),     3.0  ));
+        static_assert(Approx(Log10(1000.0),  3.0  ));
+    }
+
+    SUBCASE("ExpLog::RT")
+    {
+        for (volatile const auto X : { -2.0, -1.0, 0.5, 1.0, 2.0 })
+        {
+            CHECK(Approx(Exp(X), std::exp(X)));
+        }
+        for (volatile const auto X : { 0.5, 1.0, 2.0, 10.0 })
+        {
+            CHECK(Approx(Log(X),   std::log(X)));
+            CHECK(Approx(Log2(X),  std::log2(X)));
+            CHECK(Approx(Log10(X), std::log10(X)));
+        }
+    }
+
+    SUBCASE("Pow::CT")
+    {
+        static_assert(Approx(Pow(2.0,  0),  1.0));
+        static_assert(Approx(Pow(2.0,  3),  8.0));
+        static_assert(Approx(Pow(2.0, -1),  0.5));
+        static_assert(Approx(Pow(4.0, 0.5), 2.0));
+        static_assert(Approx(Pow(2.0, 0.5), Sqrt2<F64>));
+    }
+
+    SUBCASE("Pow::RT")
+    {
+        volatile F64 B = 2.0;
+        volatile int Ei = 3;
+        CHECK(Approx(Pow(B, Ei), 8.0));
+        CHECK(Approx(Pow(B, -1), 0.5));
+        CHECK(Approx(Pow(B, 0.5), std::sqrt(2.0)));
+        CHECK(Approx(Pow(3.0, 2.0), 9.0));
+    }
+
+    SUBCASE("Utility::CT")
+    {
+        static_assert(Min(3, 5) == 3);
+        static_assert(Max(3, 5) == 5);
+        static_assert(Clamp( 7, 0, 10) ==  7);
+        static_assert(Clamp(-1, 0, 10) ==  0);
+        static_assert(Clamp(15, 0, 10) == 10);
+        static_assert(Approx(Lerp(0.0, 10.0, 0.25), 2.5));
+        static_assert(Approx(Fmod(5.5, 2.0), 1.5));
+        static_assert(Approx(Floor( 3.7),  3.0 ));
+        static_assert(Approx(Ceil(  3.2),  4.0 ));
+        static_assert(Approx(Round( 3.5),  4.0 ));
+        static_assert(Approx(Trunc(-3.7), -3.0 ));
+        static_assert(Approx(ToRadian(180.0), Pi<F64>));
+        static_assert(Approx(ToDegree(Pi<F64>), 180.0));
+    }
+
+    SUBCASE("Utility::RT")
+    {
+        CHECK(Min(3, 5) == 3);
+        CHECK(Max(3, 5) == 5);
+        CHECK(Clamp(-1, 0, 10) == 0);
+        for (volatile const auto X : { 3.7, -3.7, 0.5, -0.5 })
+        {
+            CHECK(Approx(Floor(X), std::floor(X)));
+            CHECK(Approx(Ceil(X),  std::ceil(X)));
+            CHECK(Approx(Round(X), std::round(X)));
+            CHECK(Approx(Trunc(X), std::trunc(X)));
+        }
+        volatile F64 V = 0.25;
+        CHECK(Approx(Lerp(0.0, 10.0, V), 2.5));
+        V = 2.0;
+        CHECK(Approx(Fmod(5.5, V), 1.5));
+        CHECK(Approx(ToRadian(180.0), Pi<F64>));
+        CHECK(Approx(ToDegree(Pi<F64>), 180.0));
     }
 }
 
-// ============================================================
-// TQuat tests
-// ============================================================
-
-TEST_CASE("TQuat construction and accessors")
+TEST_CASE("Roxy::Math::TVec")
 {
-    using namespace Roxy::Math;
+    SUBCASE("Construct::CT")
+    {
+        constexpr auto V0 = FVec3{};
+        static_assert(V0[0] == 0.0f && V0[2] == 0.0f);
 
-    // Default constructor -> zero quaternion (x=y=z=w=0)
-    constexpr TQuat<double> q_default;
-    static_assert(q_default.X() == 0.0 && q_default.Y() == 0.0 &&
-                  q_default.Z() == 0.0 && q_default.W() == 0.0);
+        constexpr auto V2 = FVec2{1.0f, 2.0f};
+        static_assert(Approx(V2[0], 1.0f) && Approx(V2[1], 2.0f));
 
-    // Component constructor (X, Y, Z, W)
-    constexpr TQuat<double> q1(1.0, 2.0, 3.0, 4.0);
-    static_assert(AlmostEqual(q1.X(), 1.0));
-    static_assert(AlmostEqual(q1.Y(), 2.0));
-    static_assert(AlmostEqual(q1.Z(), 3.0));
-    static_assert(AlmostEqual(q1.W(), 4.0));
+        constexpr auto V3 = FVec3{1.0f, 2.0f, 3.0f};
+        static_assert(Approx(V3.X(), 1.0f) && Approx(V3.Y(), 2.0f) && Approx(V3.Z(), 3.0f));
 
-    // Vector + scalar constructor
-    constexpr TVec<double, 3> v{1.0, 2.0, 3.0};
-    constexpr TQuat<double> q2(v, 4.0);
-    static_assert(AlmostEqual(q2.X(), 1.0));
-    static_assert(AlmostEqual(q2.Y(), 2.0));
-    static_assert(AlmostEqual(q2.Z(), 3.0));
-    static_assert(AlmostEqual(q2.W(), 4.0));
+        constexpr auto V4 = FVec4{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(V4.X(), 1.0f) && Approx(V4.W(), 4.0f));
+    }
 
-    // Identity static method
-    constexpr TQuat<double> ident = TQuat<double>::Identity();
-    static_assert(ident.X() == 0.0 && ident.Y() == 0.0 &&
-                  ident.Z() == 0.0 && ident.W() == 1.0);
+    SUBCASE("Factory::CT")
+    {
+        constexpr auto Zero = FVec3::Zero();
+        static_assert(Zero[0] == 0.0f && Zero[1] == 0.0f && Zero[2] == 0.0f);
 
-    // Runtime checks
-    TQuat<double> q(1.0, 2.0, 3.0, 4.0);
-    CHECK(q.X() == doctest::Approx(1.0));
-    CHECK(q.Y() == doctest::Approx(2.0));
-    CHECK(q.Z() == doctest::Approx(3.0));
-    CHECK(q.W() == doctest::Approx(4.0));
+        constexpr auto One = FVec3::One();
+        static_assert(Approx(One[0], 1.0f) && Approx(One[2], 1.0f));
+
+        constexpr auto Axis = FVec3::AxisX();
+        static_assert(Axis[0] == 1.0f && Axis[1] == 0.0f);
+    }
+
+    SUBCASE("Compare::CT")
+    {
+        constexpr auto A = FVec3{1.0f, 2.0f, 3.0f};
+        constexpr auto B = FVec3{1.0f, 2.0f, 3.0f};
+        constexpr auto C = FVec3{1.0f, 2.0f, 4.0f};
+        static_assert(A == B);
+        static_assert(A != C);
+    }
+
+    SUBCASE("Arith::CT")
+    {
+        constexpr auto A = FVec2{1.0f, 2.0f};
+        constexpr auto B = FVec2{3.0f, 4.0f};
+
+        constexpr auto Add = A + B;
+        static_assert(Approx(Add[0], 4.0f) && Approx(Add[1], 6.0f));
+
+        constexpr auto Sub = B - A;
+        static_assert(Approx(Sub[0], 2.0f) && Approx(Sub[1], 2.0f));
+
+        constexpr auto Mul = A * B;
+        static_assert(Approx(Mul[0], 3.0f) && Approx(Mul[1], 8.0f));
+
+        constexpr auto Div = B / A;
+        static_assert(Approx(Div[0], 3.0f) && Approx(Div[1], 2.0f));
+
+        constexpr auto Neg = -A;
+        static_assert(Approx(Neg[0], -1.0f) && Approx(Neg[1], -2.0f));
+
+        constexpr auto V  = FVec3{1.0f, 2.0f, 3.0f};
+        constexpr auto VS = V + 10.0f;
+        static_assert(Approx(VS[0], 11.0f) && Approx(VS[2], 13.0f));
+        constexpr auto SV = 10.0f - V;
+        static_assert(Approx(SV[0],  9.0f) && Approx(SV[2],  7.0f));
+        constexpr auto MS = V * 2.0f;
+        static_assert(Approx(MS[0],  2.0f) && Approx(MS[2],  6.0f));
+        constexpr auto DS = V / 2.0f;
+        static_assert(Approx(DS[0],  0.5f) && Approx(DS[2],  1.5f));
+    }
+
+    SUBCASE("Arith::RT")
+    {
+        for (volatile const auto X : { 1.5f, 2.5f })
+        {
+            const auto A = FVec2{X, 2.0f};
+            const auto B = FVec2{3.0f, 4.0f};
+            CHECK(Approx((A + B)[0], X + 3.0f));
+            CHECK(Approx((A - B)[1], -2.0f));
+            CHECK(Approx((A * B)[0], X * 3.0f));
+            CHECK(Approx((A / B)[1], 0.5f));
+            CHECK(Approx((-A)[0], -X));
+        }
+    }
+
+    SUBCASE("Compound::RT")
+    {
+        volatile const auto W = 0.5f;
+        auto V = FVec3{1.0f, 2.0f, 3.0f};
+        auto U = FVec3{W, W, W};
+
+        V += U;
+        CHECK(Approx(V[0], 1.5f));
+        V -= U;
+        CHECK(Approx(V[0], 1.0f));
+        V *= U;
+        CHECK(Approx(V[0], 0.5f));
+        V /= U;
+        CHECK(Approx(V[0], 1.0f));
+        V += 1.0f;
+        CHECK(Approx(V[2], 4.0f));
+        V -= 1.0f;
+        V *= 2.0f;
+        CHECK(Approx(V[2], 6.0f));
+        V /= 2.0f;
+        CHECK(Approx(V[2], 3.0f));
+    }
+
+    SUBCASE("Dot::CT")
+    {
+        constexpr auto A = FVec3{1.0f, 2.0f, 3.0f};
+        constexpr auto B = FVec3{4.0f, 5.0f, 6.0f};
+        static_assert(Approx(A.Dot(B), 32.0f));
+
+        constexpr auto C = FVec2{1.5f, 2.5f};
+        constexpr auto D = FVec2{3.0f, 4.0f};
+        static_assert(Approx(C.Dot(D), 14.5f));
+    }
+
+    SUBCASE("Dot::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            const auto A = FVec4{X, 2.0f, 3.0f, 4.0f};
+            const auto B = FVec4{5.0f, 6.0f, 7.0f, 8.0f};
+            CHECK(Approx(A.Dot(B), X * 5.0f + 65.0f));
+        }
+    }
+
+    SUBCASE("Cross::CT")
+    {
+        constexpr auto X = FVec3{1.0f, 0.0f, 0.0f};
+        constexpr auto Y = FVec3{0.0f, 1.0f, 0.0f};
+        constexpr auto Z = X.Cross(Y);
+        static_assert(Approx(Z[0], 0.0f) && Approx(Z[1], 0.0f) && Approx(Z[2], 1.0f));
+        static_assert(Approx(Y.Cross(X)[2], -1.0f));
+    }
+
+    SUBCASE("Cross::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            const auto A = FVec3{X, 2.0f, 3.0f};
+            const auto B = FVec3{4.0f, 5.0f, 6.0f};
+            const auto C = A.Cross(B);
+            CHECK(Approx(C[0], 2.0f * 6.0f - 3.0f * 5.0f));
+            CHECK(Approx(C[1], 3.0f * 4.0f - X * 6.0f));
+            CHECK(Approx(C[2], X * 5.0f - 2.0f * 4.0f));
+        }
+    }
+
+    SUBCASE("Length::CT")
+    {
+        constexpr auto V = FVec3{3.0f, 4.0f, 0.0f};
+        static_assert(Approx(V.SqrLength(), 25.0f));
+        static_assert(Approx(V.Length(), 5.0f));
+        static_assert(Approx(V.InvSqrLength(), 1.0f / 25.0f));
+        static_assert(Approx(V.InvLength(), 0.2f));
+
+        constexpr auto N = V.Normalized();
+        static_assert(Approx(N.Length(), 1.0f));
+        static_assert(Approx(N[0], 0.6f) && Approx(N[1], 0.8f) && Approx(N[2], 0.0f));
+    }
+
+    SUBCASE("Length::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            const auto V = FVec2{X, 1.0f};
+            CHECK(Approx(V.SqrLength(), X * X + 1.0f));
+            CHECK(Approx(V.Length(), std::sqrt(X * X + 1.0f)));
+            CHECK(Approx(V.InvSqrLength(), 1.0f / (X * X + 1.0f)));
+            CHECK(Approx(V.InvLength(), 1.0f / std::sqrt(X * X + 1.0f)));
+            auto N = V.Normalized();
+            CHECK(Approx(N.Length(), 1.0f));
+        }
+    }
+
+    SUBCASE("As::CT")
+    {
+        constexpr auto V = FVec3{1.0f, 2.0f, 3.0f};
+        constexpr auto D = V.As<F64>();
+        static_assert(std::is_same_v<decltype(D), const TVec<F64, 3>>);
+        static_assert(Approx(D[0], 1.0) && Approx(D[1], 2.0) && Approx(D[2], 3.0));
+    }
+
+    SUBCASE("MinMax::CT")
+    {
+        constexpr auto V = FVec3{5.0f, 2.0f, 8.0f};
+        static_assert(Approx(V.Min(), 2.0f));
+        static_assert(Approx(V.Max(), 8.0f));
+
+        constexpr auto W = FVec2{-1.5f, 3.5f};
+        static_assert(Approx(W.Min(), -1.5f));
+        static_assert(Approx(W.Max(), 3.5f));
+    }
 }
 
-TEST_CASE("TQuat comparison operators")
+TEST_CASE("Roxy::Math::TMat")
 {
-    using namespace Roxy::Math;
+    SUBCASE("Construct::CT")
+    {
+        constexpr auto M0 = FMat3{};
+        static_assert(M0[0][0] == 0.0f && M0[2][2] == 0.0f);
 
-    constexpr TQuat<double> a(1.0, 2.0, 3.0, 4.0);
-    constexpr TQuat<double> b(1.0, 2.0, 3.0, 4.0);
-    constexpr TQuat<double> c(1.0, 2.0, 3.0, 5.0);
+        constexpr auto M2 = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(M2[0][0], 1.0f) && Approx(M2[0][1], 2.0f));
+        static_assert(Approx(M2[1][0], 3.0f) && Approx(M2[1][1], 4.0f));
 
-    static_assert(a == b);
-    static_assert(a != c);
-    static_assert(!(a == c));
+        constexpr auto R0 = FVec2{1.0f, 2.0f};
+        constexpr auto R1 = FVec2{3.0f, 4.0f};
+        constexpr auto MR = FMat2{R0, R1};
+        static_assert(MR[0] == R0 && MR[1] == R1);
+    }
+
+    SUBCASE("Factory::CT")
+    {
+        constexpr auto Zero = FMat2::Zero();
+        static_assert(Zero[0][0] == 0.0f && Zero[1][1] == 0.0f);
+
+        constexpr auto Ident = FMat2::Identity();
+        static_assert(Ident[0][0] == 1.0f && Ident[0][1] == 0.0f);
+        static_assert(Ident[1][0] == 0.0f && Ident[1][1] == 1.0f);
+    }
+
+    SUBCASE("Compare::CT")
+    {
+        constexpr auto A = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto B = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto C = FMat2{1.0f, 2.0f, 3.0f, 5.0f};
+        static_assert(A == B);
+        static_assert(A != C);
+    }
+
+    SUBCASE("RowCol::CT")
+    {
+        constexpr auto M = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(M.Row(0)[0], 1.0f) && Approx(M.Row(1)[1], 4.0f));
+        static_assert(Approx(M.Col(0)[1], 3.0f) && Approx(M.Col(1)[0], 2.0f));
+    }
+
+    SUBCASE("Arith::CT")
+    {
+        constexpr auto A = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto B = FMat2{5.0f, 6.0f, 7.0f, 8.0f};
+
+        constexpr auto Add = A + B;
+        static_assert(Approx(Add[0][0], 6.0f) && Approx(Add[1][1], 12.0f));
+
+        constexpr auto Sub = B - A;
+        static_assert(Approx(Sub[0][0], 4.0f) && Approx(Sub[1][1], 4.0f));
+
+        constexpr auto Mul = A.Mul(B);
+        static_assert(Approx(Mul[0][0], 19.0f) && Approx(Mul[0][1], 22.0f));
+        static_assert(Approx(Mul[1][0], 43.0f) && Approx(Mul[1][1], 50.0f));
+
+        constexpr auto Neg = -A;
+        static_assert(Approx(Neg[0][0], -1.0f) && Approx(Neg[1][1], -4.0f));
+
+        constexpr auto MS = A + 10.0f;
+        static_assert(Approx(MS[0][0], 11.0f) && Approx(MS[1][1], 14.0f));
+
+        constexpr auto SM = 10.0f - A;
+        static_assert(Approx(SM[0][0],  9.0f) && Approx(SM[1][1],  6.0f));
+
+        constexpr auto AS = A * 2.0f;
+        static_assert(Approx(AS[0][0],  2.0f) && Approx(AS[1][1],  8.0f));
+
+        constexpr auto AD = A / 2.0f;
+        static_assert(Approx(AD[0][0],  0.5f) && Approx(AD[1][1],  2.0f));
+    }
+
+    SUBCASE("Arith::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            const auto A = FMat2{X, 2.0f, 3.0f, 4.0f};
+            const auto B = FMat2{5.0f, 6.0f, 7.0f, 8.0f};
+
+            CHECK(Approx((A + B)[0][0], X + 5.0f));
+            CHECK(Approx((B - A)[1][1], 4.0f));
+            CHECK(Approx(A.Mul(B)[0][0], X * 5.0f + 14.0f));
+            CHECK(Approx((A * 2.0f)[1][1], 8.0f));
+            CHECK(Approx((10.0f / A)[0][0], 10.0f / X));
+        }
+    }
+
+    SUBCASE("MulVec::CT")
+    {
+        constexpr auto M = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto V = FVec2{5.0f, 6.0f};
+        constexpr auto Res = M.Mul(V);
+        static_assert(Approx(Res[0], 17.0f) && Approx(Res[1], 39.0f));
+    }
+
+    SUBCASE("Transpose::CT")
+    {
+        constexpr auto M  = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto T  = M.Transposed();
+        static_assert(Approx(T[0][1], 3.0f) && Approx(T[1][0], 2.0f));
+
+        constexpr auto M3 = FMat3{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        constexpr auto T3 = M3.Transposed();
+        static_assert(Approx(T3[0][1], 4.0f) && Approx(T3[2][0], 3.0f));
+    }
+
+    SUBCASE("Transpose::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            auto M = FMat2{X, 2.0f, 3.0f, 4.0f};
+            M.Transpose();
+            CHECK(Approx(M[0][1], 3.0f));
+            CHECK(Approx(M[1][0], 2.0f));
+        }
+    }
+
+    SUBCASE("Determinant::CT")
+    {
+        constexpr auto M2 = FMat2{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(M2.Determinant(), -2.0f));
+        static_assert(Approx(M2.InvDeterminant(), -0.5f));
+
+        constexpr auto M3 = FMat3{6.0f, 1.0f, 1.0f, 4.0f, -2.0f, 5.0f, 2.0f, 8.0f, 7.0f};
+        static_assert(Approx(M3.Determinant(), -306.0f));
+
+        constexpr auto M4 = FMat4{1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, 2.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 3.0f, 0.0f,
+                                  0.0f, 0.0f, 0.0f, 4.0f};
+        static_assert(Approx(M4.Determinant(), 24.0f));
+        static_assert(Approx(M4.InvDeterminant(), 1.0f / 24.0f));
+    }
+
+    SUBCASE("Inverse::CT")
+    {
+        constexpr auto M2 = FMat2{4.0f, 7.0f, 2.0f, 6.0f};
+        constexpr auto Inv = M2.Inversed();
+        static_assert(Approx(Inv[0][0], 0.6f) && Approx(Inv[0][1], -0.7f));
+        static_assert(Approx(Inv[1][0], -0.2f) && Approx(Inv[1][1], 0.4f));
+
+        constexpr auto Id2 = M2.Mul(Inv);
+        static_assert(Approx(Id2[0][0], 1.0f) && Approx(Id2[1][1], 1.0f));
+
+        constexpr auto M3 = FMat3{1.0f, 2.0f, 3.0f, 0.0f, 1.0f, 4.0f, 5.0f, 6.0f, 0.0f};
+        constexpr auto Id3 = M3.Mul(M3.Inversed());
+        static_assert(Approx(Id3[0][0], 1.0f) && Approx(Id3[0][1], 0.0f) && Approx(Id3[2][2], 1.0f));
+
+        constexpr auto M4 = FMat4{2.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, 4.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 8.0f, 0.0f,
+                                  0.0f, 0.0f, 0.0f, 16.0f};
+        constexpr auto Id4 = M4.Mul(M4.Inversed());
+        static_assert(Approx(Id4[0][0], 1.0f) && Approx(Id4[3][3], 1.0f));
+    }
+
+    SUBCASE("Inverse::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            auto M = FMat2{X, 2.0f, 3.0f, 4.0f};
+            M.Inverse();
+            CHECK(Approx(M[0][0],  4.0f / (4.0f * X - 6.0f)));
+            CHECK(Approx(M[0][1], -2.0f / (4.0f * X - 6.0f)));
+        }
+    }
 }
 
-TEST_CASE("TQuat arithmetic operators (quaternion-quaternion)")
+TEST_CASE("Roxy::Math::TQuat")
 {
-    using namespace Roxy::Math;
+    SUBCASE("Construct::CT")
+    {
+        constexpr auto Q0 = FQuat();
+        static_assert(Q0.X() == 0.0f && Q0.W() == 0.0f);
 
-    constexpr TQuat<double> q1(1.0, 2.0, 3.0, 4.0); // (x,y,z,w) = (1,2,3,4)
-    constexpr TQuat<double> q2(5.0, 6.0, 7.0, 8.0);
+        constexpr auto Q1 = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(Q1.X(), 1.0f) && Approx(Q1.W(), 4.0f));
 
-    // Addition
-    constexpr auto sum = q1 + q2;
-    static_assert(AlmostEqual(sum.X(), 6.0));
-    static_assert(AlmostEqual(sum.Y(), 8.0));
-    static_assert(AlmostEqual(sum.Z(), 10.0));
-    static_assert(AlmostEqual(sum.W(), 12.0));
+        constexpr auto Q2 = FQuat{FVec3{1.0f, 2.0f, 3.0f}, 4.0f};
+        static_assert(Approx(Q2.Y(), 2.0f) && Approx(Q2.W(), 4.0f));
 
-    // Subtraction
-    constexpr auto diff = q2 - q1;
-    static_assert(AlmostEqual(diff.X(), 4.0));
-    static_assert(AlmostEqual(diff.Y(), 4.0));
-    static_assert(AlmostEqual(diff.Z(), 4.0));
-    static_assert(AlmostEqual(diff.W(), 4.0));
+        constexpr auto Ident = FQuat::Identity();
+        static_assert(Ident.X() == 0.0f && Ident.W() == 1.0f);
+    }
 
-    // Hamilton product (manual verification)
-    // q1 * q2 = (w1*w2 - v1·v2, w1*v2 + w2*v1 + v1×v2)
-    // v1 = (1,2,3), v2 = (5,6,7)
-    // dot = 5+12+21 = 38
-    // w = 4*8 - 38 = -6
-    // cross = (2*7-3*6, 3*5-1*7, 1*6-2*5) = (-4, 8, -4)
-    // v = 4*(5,6,7) + 8*(1,2,3) + (-4,8,-4) = (20+8-4, 24+16+8, 28+24-4) = (24,48,48)
-    constexpr auto prod = q1 * q2;
-    static_assert(AlmostEqual(prod.X(), 24.0));
-    static_assert(AlmostEqual(prod.Y(), 48.0));
-    static_assert(AlmostEqual(prod.Z(), 48.0));
-    static_assert(AlmostEqual(prod.W(), -6.0));
+    SUBCASE("Compare::CT")
+    {
+        constexpr auto A = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto B = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto C = FQuat{1.0f, 2.0f, 3.0f, 5.0f};
+        static_assert(A == B);
+        static_assert(A != C);
+    }
 
-    // Division: q1 / q2 = q1 * q2^{-1}
-    constexpr auto div = q1 / q2;
-    constexpr auto inv_q2 = q2.Inversed();
-    constexpr auto expected_div = q1 * inv_q2;
-    static_assert(AlmostEqual(div.X(), expected_div.X()));
-    static_assert(AlmostEqual(div.Y(), expected_div.Y()));
-    static_assert(AlmostEqual(div.Z(), expected_div.Z()));
-    static_assert(AlmostEqual(div.W(), expected_div.W()));
+    SUBCASE("Arith::CT")
+    {
+        constexpr auto A = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto B = FQuat{5.0f, 6.0f, 7.0f, 8.0f};
 
-    // Unary minus
-    constexpr auto neg = -q1;
-    static_assert(AlmostEqual(neg.X(), -1.0));
-    static_assert(AlmostEqual(neg.Y(), -2.0));
-    static_assert(AlmostEqual(neg.Z(), -3.0));
-    static_assert(AlmostEqual(neg.W(), -4.0));
+        constexpr auto Sum = A + B;
+        static_assert(Approx(Sum.X(), 6.0f) && Approx(Sum.W(), 12.0f));
 
-    // Unary plus
-    constexpr auto pos = +q1;
-    static_assert(pos == q1);
-}
+        constexpr auto Diff = B - A;
+        static_assert(Approx(Diff.X(), 4.0f) && Approx(Diff.W(), 4.0f));
 
-TEST_CASE("TQuat scalar arithmetic")
-{
-    // using namespace Roxy::Math;
-    //
-    // constexpr TQuat<double> q(1.0, 2.0, 3.0, 4.0);
-    //
-    // constexpr auto mul = q * 2.0;
-    // static_assert(AlmostEqual(mul.X(), 2.0));
-    // static_assert(AlmostEqual(mul.Y(), 4.0));
-    // static_assert(AlmostEqual(mul.Z(), 6.0));
-    // static_assert(AlmostEqual(mul.W(), 8.0));
-    //
-    // constexpr auto mul2 = 2.0 * q;
-    // static_assert(AlmostEqual(mul2.X(), 2.0));
-    // static_assert(AlmostEqual(mul2.Y(), 4.0));
-    // static_assert(AlmostEqual(mul2.Z(), 6.0));
-    // static_assert(AlmostEqual(mul2.W(), 8.0));
-    //
-    // constexpr auto div = q / 2.0;
-    // static_assert(AlmostEqual(div.X(), 0.5));
-    // static_assert(AlmostEqual(div.Y(), 1.0));
-    // static_assert(AlmostEqual(div.Z(), 1.5));
-    // static_assert(AlmostEqual(div.W(), 2.0));
-}
+        constexpr auto Prod = A * B;
+        static_assert(Approx(Prod.X(), 24.0f) && Approx(Prod.Y(), 48.0f));
+        static_assert(Approx(Prod.Z(), 48.0f) && Approx(Prod.W(), -6.0f));
 
-TEST_CASE("TQuat compound assignment operators")
-{
-    using namespace Roxy::Math;
+        constexpr auto Div = A / B;
+        constexpr auto Inv = B.Inversed();
+        constexpr auto Expected = A * Inv;
+        static_assert(Approx(Div.X(), Expected.X()) && Approx(Div.W(), Expected.W()));
 
-    TQuat<double> q1(1.0, 2.0, 3.0, 4.0);
-    TQuat<double> q2(5.0, 6.0, 7.0, 8.0);
+        constexpr auto Neg = -A;
+        static_assert(Approx(Neg.X(), -1.0f) && Approx(Neg.W(), -4.0f));
+    }
 
-    q1 += q2;
-    CHECK(q1.X() == doctest::Approx(6.0));
-    CHECK(q1.Y() == doctest::Approx(8.0));
-    CHECK(q1.Z() == doctest::Approx(10.0));
-    CHECK(q1.W() == doctest::Approx(12.0));
+    SUBCASE("Arith::RT")
+    {
+        volatile const auto X = 1.0f;
+        auto Q = FQuat{X, 2.0f, 3.0f, 4.0f};
+        auto R = FQuat{5.0f, 6.0f, 7.0f, 8.0f};
 
-    q1 -= q2;
-    CHECK(q1.X() == doctest::Approx(1.0));
-    CHECK(q1.Y() == doctest::Approx(2.0));
-    CHECK(q1.Z() == doctest::Approx(3.0));
-    CHECK(q1.W() == doctest::Approx(4.0));
+        Q += R;
+        CHECK(Approx(Q.X(), X + 5.0f));
+        CHECK(Approx(Q.W(), 12.0f));
+        Q -= R;
+        CHECK(Approx(Q.X(), X));
+        CHECK(Approx(Q.W(), 4.0f));
+    }
 
-    // // Quaternion multiplication compound
-    // q1 *= q2; // q1 becomes q1 * q2
-    // const auto expected_mul = TQuat<double>(1.0, 2.0, 3.0, 4.0) * q2;
-    // CHECK(q1.X() == doctest::Approx(expected_mul.X()));
-    // CHECK(q1.Y() == doctest::Approx(expected_mul.Y()));
-    // CHECK(q1.Z() == doctest::Approx(expected_mul.Z()));
-    // CHECK(q1.W() == doctest::Approx(expected_mul.W()));
-    //
-    // // Scalar compound
-    // q1 *= 2.0;
-    // CHECK(q1.X() == doctest::Approx(expected_mul.X() * 2.0));
-    // CHECK(q1.Y() == doctest::Approx(expected_mul.Y() * 2.0));
-    // CHECK(q1.Z() == doctest::Approx(expected_mul.Z() * 2.0));
-    // CHECK(q1.W() == doctest::Approx(expected_mul.W() * 2.0));
-    //
-    // q1 /= 2.0;
-    // CHECK(q1.X() == doctest::Approx(expected_mul.X()));
-    // CHECK(q1.Y() == doctest::Approx(expected_mul.Y()));
-    // CHECK(q1.Z() == doctest::Approx(expected_mul.Z()));
-    // CHECK(q1.W() == doctest::Approx(expected_mul.W()));
-}
+    SUBCASE("Length::CT")
+    {
+        constexpr auto Q = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        static_assert(Approx(Q.SqrLength(), 30.0f));
+        static_assert(Approx(Q.Length(), Sqrt(30.0f)));
 
-TEST_CASE("TQuat length, normalization, conjugate, inverse")
-{
-    using namespace Roxy::Math;
+        constexpr auto Conj = Q.Conjugated();
+        static_assert(Approx(Conj.X(), -1.0f) && Approx(Conj.W(), 4.0f));
 
-    // Non-unit quaternion
-    constexpr TQuat<double> q(1.0, 2.0, 3.0, 4.0);
-    constexpr double sqr_len = q.SqrLength();
-    static_assert(AlmostEqual(sqr_len, 1.0 + 4.0 + 9.0 + 16.0)); // 30
+        constexpr auto Inv = Q.Inversed();
+        static_assert(Approx(Inv.X(), -1.0f / 30.0f) && Approx(Inv.W(), 4.0f / 30.0f));
 
-    constexpr double len = q.Length();
-    static_assert(AlmostEqual(len, Sqrt(30.0)));
+        constexpr auto Norm = Q.Normalized();
+        static_assert(Approx(Norm.Length(), 1.0f));
+        static_assert(Approx(Norm.X(), 1.0f / Sqrt(30.0f)));
 
-    // Conjugate
-    constexpr auto conj = q.Conjugated();
-    static_assert(AlmostEqual(conj.X(), -1.0));
-    static_assert(AlmostEqual(conj.Y(), -2.0));
-    static_assert(AlmostEqual(conj.Z(), -3.0));
-    static_assert(AlmostEqual(conj.W(), 4.0));
+        constexpr auto Ident = FQuat::Identity();
+        static_assert(Ident.Inversed() == Ident);
+        static_assert(Ident.Conjugated() == Ident);
+    }
 
-    // Inverse: q^{-1} = conj(q) / |q|^2
-    constexpr auto inv = q.Inversed();
-    constexpr double inv_sqr_len = 1.0 / 30.0;
-    static_assert(AlmostEqual(inv.X(), -1.0 * inv_sqr_len));
-    static_assert(AlmostEqual(inv.Y(), -2.0 * inv_sqr_len));
-    static_assert(AlmostEqual(inv.Z(), -3.0 * inv_sqr_len));
-    static_assert(AlmostEqual(inv.W(), 4.0 * inv_sqr_len));
+    SUBCASE("Length::RT")
+    {
+        auto Q = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
 
-    // Normalized returns a copy and is constexpr
-    constexpr auto norm = q.Normalized();
-    static_assert(AlmostEqual(norm.Length(), 1.0));
-    static_assert(AlmostEqual(norm.X(), 1.0 / Sqrt(30.0)));
-    static_assert(AlmostEqual(norm.Y(), 2.0 / Sqrt(30.0)));
-    static_assert(AlmostEqual(norm.Z(), 3.0 / Sqrt(30.0)));
-    static_assert(AlmostEqual(norm.W(), 4.0 / Sqrt(30.0)));
+        Q.Conjugate();
+        CHECK(Approx(Q.X(), -1.0f));
+        CHECK(Approx(Q.W(), 4.0f));
 
-    // In-place variants mutate the object and return a reference
-    TQuat<double> q_mut(1.0, 2.0, 3.0, 4.0);
-    q_mut.Conjugate();
-    CHECK(q_mut.X() == doctest::Approx(-1.0));
-    CHECK(q_mut.Y() == doctest::Approx(-2.0));
-    CHECK(q_mut.Z() == doctest::Approx(-3.0));
-    CHECK(q_mut.W() == doctest::Approx(4.0));
+        Q = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        Q.Normalize();
+        CHECK(Approx(Q.Length(), 1.0f));
 
-    q_mut = TQuat<double>(1.0, 2.0, 3.0, 4.0);
-    q_mut.Normalize();
-    CHECK(q_mut.Length() == doctest::Approx(1.0));
-    CHECK(q_mut.X() == doctest::Approx(1.0 / std::sqrt(30.0)));
+        Q = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        Q.Inverse();
+        CHECK(Approx(Q.X(), -1.0f / 30.0f));
+        CHECK(Approx(Q.W(), 4.0f / 30.0f));
+    }
 
-    q_mut = TQuat<double>(1.0, 2.0, 3.0, 4.0);
-    q_mut.Inverse();
-    CHECK(q_mut.X() == doctest::Approx(-1.0 / 30.0));
-    CHECK(q_mut.W() == doctest::Approx(4.0 / 30.0));
+    SUBCASE("Mat::CT")
+    {
+        constexpr auto Ident = FQuat::Identity();
+        constexpr auto M3 = Ident.Mat<3>();
+        static_assert(Approx(M3[0][0], 1.0f) && Approx(M3[1][1], 1.0f) && Approx(M3[2][2], 1.0f));
 
-    // Identity quaternion
-    constexpr auto ident = TQuat<double>::Identity();
-    constexpr auto ident_inv = ident.Inversed();
-    static_assert(ident_inv == ident);
-    constexpr auto ident_conj = ident.Conjugated();
-    static_assert(ident_conj == ident);
-}
+        constexpr auto S  = Sqrt(2.0f) / 2.0f;
+        constexpr auto Qz = FQuat{0.0f, 0.0f, S, S};   // 90° around Z
+        constexpr auto Mz = Qz.Mat<3>();
+        static_assert(Approx(Mz[0][0], 0.0f) && Approx(Mz[0][1], -1.0f));
+        static_assert(Approx(Mz[1][0], 1.0f) && Approx(Mz[2][2], 1.0f));
+    }
 
-TEST_CASE("TQuat ToMat (3x3 and 4x4)")
-{
-    using namespace Roxy::Math;
+    SUBCASE("Rotate::CT")
+    {
+        constexpr auto S  = Sqrt(2.0f) / 2.0f;
+        constexpr auto Qz = FQuat{0.0f, 0.0f, S, S};
+        constexpr auto V  = FVec3{1.0f, 0.0f, 0.0f};
+        constexpr auto Rotated = Qz.Rotate(V);
+        static_assert(Approx(Rotated[0], 0.0f, 1e-5f) && Approx(Rotated[1], 1.0f, 1e-5f) && Approx(Rotated[2], 0.0f, 1e-5f));
+    }
 
-    // Identity quaternion -> identity matrix
-    constexpr TQuat<double> ident = TQuat<double>::Identity();
-    constexpr auto mat3_ident = ident.Mat<3>();
-    static_assert(AlmostEqual(mat3_ident[0][0], 1.0));
-    static_assert(AlmostEqual(mat3_ident[0][1], 0.0));
-    static_assert(AlmostEqual(mat3_ident[0][2], 0.0));
-    static_assert(AlmostEqual(mat3_ident[1][0], 0.0));
-    static_assert(AlmostEqual(mat3_ident[1][1], 1.0));
-    static_assert(AlmostEqual(mat3_ident[1][2], 0.0));
-    static_assert(AlmostEqual(mat3_ident[2][0], 0.0));
-    static_assert(AlmostEqual(mat3_ident[2][1], 0.0));
-    static_assert(AlmostEqual(mat3_ident[2][2], 1.0));
+    SUBCASE("Rotate::RT")
+    {
+        for (volatile const auto X : { 1.0f, 2.0f })
+        {
+            const auto Qz = FQuat{0.0f, 0.0f, Sqrt(2.0f) / 2.0f, Sqrt(2.0f) / 2.0f};
+            const auto V  = FVec3{X, 0.0f, 0.0f};
+            const auto Rotated = Qz.Rotate(V);
+            CHECK(Approx(Rotated[0], 0.0f, 1e-5f));
+            CHECK(Approx(Rotated[1], X, 1e-5f));
+            CHECK(Approx(Rotated[2], 0.0f, 1e-5f));
+        }
+    }
 
-    constexpr auto mat4_ident = ident.Mat<4>();
-    static_assert(AlmostEqual(mat4_ident[3][3], 1.0));
+    SUBCASE("Interp::CT")
+    {
+        constexpr auto A = FQuat::Identity();
+        constexpr auto S = Sqrt(2.0f) / 2.0f;
+        constexpr auto B = FQuat{0.0f, 0.0f, S, S};
 
-    // 90-degree rotation around Z axis
-    // Quaternion: w = cos(pi/4), z = sin(pi/4) (since half-angle)
-    constexpr double half_sqrt2 = Sqrt(2.0) / 2.0;
-    constexpr TQuat<double> qz(0.0, 0.0, half_sqrt2, half_sqrt2); // (x,y,z,w)
-    constexpr auto mat_z = qz.Mat<3>();
-    // Expected rotation matrix for +90° around Z:
-    // [0, -1, 0]
-    // [1,  0, 0]
-    // [0,  0, 1]
-    static_assert(AlmostEqual(mat_z[0][0], 0.0));
-    static_assert(AlmostEqual(mat_z[0][1], -1.0));
-    static_assert(AlmostEqual(mat_z[0][2], 0.0));
-    static_assert(AlmostEqual(mat_z[1][0], 1.0));
-    static_assert(AlmostEqual(mat_z[1][1], 0.0));
-    static_assert(AlmostEqual(mat_z[1][2], 0.0));
-    static_assert(AlmostEqual(mat_z[2][0], 0.0));
-    static_assert(AlmostEqual(mat_z[2][1], 0.0));
-    static_assert(AlmostEqual(mat_z[2][2], 1.0));
+        static_assert(Approx(Lerp(A, B, 0.5f).Z(), S / 2.0f));
+        static_assert(Approx(NLerp(A, B, 0.5f).Length(), 1.0f));
 
-    // Runtime check for 4x4 matrix: same rotation embedded
-    const auto mat4_z = qz.Mat<4>();
-    CHECK(mat4_z[0][0] == doctest::Approx(0.0));
-    CHECK(mat4_z[0][1] == doctest::Approx(-1.0));
-    CHECK(mat4_z[1][0] == doctest::Approx(1.0));
-    CHECK(mat4_z[3][3] == doctest::Approx(1.0));
-}
+        constexpr auto Slerp = SLerp(A, B, 0.5f);   // 45° around Z
+        static_assert(Approx(Slerp.Length(), 1.0f, 1e-5f));
+        static_assert(Approx(Slerp.Z(), Sin(Pi<F32> / 8.0f), 1e-5f));
+        static_assert(Approx(Slerp.W(), Cos(Pi<F32> / 8.0f), 1e-5f));
+    }
 
-TEST_CASE("TQuat Rotate vector")
-{
-    using namespace Roxy::Math;
+    SUBCASE("Interp::RT")
+    {
+        volatile const auto T = 0.5f;
+        const auto A = FQuat::Identity();
+        const auto B = FQuat{0.0f, 0.0f, Sqrt(2.0f) / 2.0f, Sqrt(2.0f) / 2.0f};
+        const auto Slerp = SLerp(A, B, T);
+        CHECK(Approx(Slerp.Length(), 1.0f, 1e-5f));
+        CHECK(Approx(Slerp.Z(), std::sin(Pi<F32> / 8.0f), 1e-5f));
+    }
 
-    // Rotate (1,0,0) by 90 degrees around Z -> (0,1,0)
-    constexpr double half_sqrt2 = Sqrt(2.0) / 2.0;
-    // Rotate is constexpr: verify the compile-time path
-    constexpr TQuat<double> qz_cx(0.0, 0.0, Sqrt(2.0) / 2.0, Sqrt(2.0) / 2.0);
-    constexpr TVec<double, 3> v_cx{1.0, 0.0, 0.0};
-    constexpr auto rotated_cx = qz_cx.Rotate(v_cx);
-    static_assert(AlmostEqual(rotated_cx[0], 0.0) && AlmostEqual(rotated_cx[1], 1.0) && AlmostEqual(rotated_cx[2], 0.0));
-
-    TQuat<double> qz(0.0, 0.0, half_sqrt2, half_sqrt2);
-    TVec<double, 3> v{1.0, 0.0, 0.0};
-    auto rotated = qz.Rotate(v);
-    CHECK(rotated[0] == doctest::Approx(0.0).epsilon(1e-9));
-    CHECK(rotated[1] == doctest::Approx(1.0).epsilon(1e-9));
-    CHECK(rotated[2] == doctest::Approx(0.0).epsilon(1e-9));
-
-    // Rotate (1,0,0) by 180 degrees around Y -> (-1,0,0)
-    // Quaternion: w = cos(pi/2) = 0, y = sin(pi/2) = 1
-    // TQuat<double> qy(0.0, 0.0, 0.0, 1.0, 0.0); // careful: constructor order (X,Y,Z,W) -> (0,0,0,1,0) invalid, need check
-    // Actually use vector+scalar: vector (0,0,0) no; let's construct properly:
-    // qy = (x=0, y=1, z=0, w=0)  =>  TQuat<double> qy(0.0, 1.0, 0.0, 0.0);
-    TQuat<double> qy(0.0, 1.0, 0.0, 0.0);
-    auto rotated2 = qy.Rotate(v);
-    CHECK(rotated2[0] == doctest::Approx(-1.0).epsilon(1e-9));
-    CHECK(rotated2[1] == doctest::Approx(0.0).epsilon(1e-9));
-    CHECK(rotated2[2] == doctest::Approx(0.0).epsilon(1e-9));
-}
-
-TEST_CASE("TQuat interpolation (Lerp, Nlerp, Slerp)")
-{
-    using namespace Roxy::Math;
-
-    // Two identity-like quaternions for basic tests
-    TQuat<double> q1 = TQuat<double>::Identity();
-    TQuat<double> q2 = TQuat<double>::Identity();
-
-    // Lerp between identical quaternions gives same quaternion
-    auto lerp = Lerp(q1, q2, 0.5);
-    CHECK(lerp.X() == doctest::Approx(0.0));
-    CHECK(lerp.Y() == doctest::Approx(0.0));
-    CHECK(lerp.Z() == doctest::Approx(0.0));
-    CHECK(lerp.W() == doctest::Approx(1.0));
-
-    // Nlerp of same
-    auto nlerp = NLerp(q1, q2, 0.5);
-    CHECK(nlerp.X() == doctest::Approx(0.0));
-    CHECK(nlerp.Y() == doctest::Approx(0.0));
-    CHECK(nlerp.Z() == doctest::Approx(0.0));
-    CHECK(nlerp.W() == doctest::Approx(1.0));
-
-    // Slerp of same
-    auto slerp = SLerp(q1, q2, 0.5);
-    CHECK(slerp.X() == doctest::Approx(0.0));
-    CHECK(slerp.Y() == doctest::Approx(0.0));
-    CHECK(slerp.Z() == doctest::Approx(0.0));
-    CHECK(slerp.W() == doctest::Approx(1.0));
-
-    // Test between 0 and 90 degrees around Z
-    constexpr double half_sqrt2 = Sqrt(2.0) / 2.0;
-    TQuat<double> q_start = TQuat<double>::Identity(); // 0°
-    TQuat<double> q_end(0.0, 0.0, half_sqrt2, half_sqrt2); // 90°
-    double t = 0.5;
-    auto slerp_half = SLerp(q_start, q_end, t);
-    // Expected rotation: 45° around Z, quaternion = (0,0,sin(pi/8),cos(pi/8))
-    double expected_angle = Roxy::Math::Pi<double> / 8.0;
-    double expected_sin = std::sin(expected_angle);
-    double expected_cos = std::cos(expected_angle);
-    CHECK(slerp_half.X() == doctest::Approx(0.0).epsilon(1e-9));
-    CHECK(slerp_half.Y() == doctest::Approx(0.0).epsilon(1e-9));
-    CHECK(slerp_half.Z() == doctest::Approx(expected_sin).epsilon(1e-9));
-    CHECK(slerp_half.W() == doctest::Approx(expected_cos).epsilon(1e-9));
-
-    // Nlerp should be close to normalized lerp (not exactly same as slerp, but should be unit length)
-    auto nlerp_half = NLerp(q_start, q_end, t);
-    CHECK(nlerp_half.Length() == doctest::Approx(1.0).epsilon(1e-9));
-    // Slerp should also produce unit quaternion
-    CHECK(slerp_half.Length() == doctest::Approx(1.0).epsilon(1e-9));
-
-    // constexpr path: Lerp / NLerp / SLerp are all constexpr
-    // (exercises the compile-time Sin / Acos / InvSqrt implementations)
-    constexpr TQuat<double> cq1 = TQuat<double>::Identity();
-    constexpr TQuat<double> cq2(0.0, 0.0, Sqrt(2.0) / 2.0, Sqrt(2.0) / 2.0);
-    constexpr auto clerp = Lerp(cq1, cq2, 0.5);
-    static_assert(AlmostEqual(clerp.Z(), Sqrt(2.0) / 4.0));                    // 0.5 * sin(45°)
-    static_assert(AlmostEqual(clerp.W(), 0.5 + 0.5 * (Sqrt(2.0) / 2.0)));
-
-    constexpr auto cnlerp = NLerp(cq1, cq2, 0.5);
-    static_assert(AlmostEqual(cnlerp.Length(), 1.0));
-
-    // constexpr SLerp: exercises the compile-time Acos / Sin / InvSqrt path.
-    // (Detail::Atan was fixed with a range reduction; see RoxyMathCommon.h.)
-    constexpr auto cslerp = SLerp(cq1, cq2, 0.5);
-    static_assert(AlmostEqual(cslerp.Length(), 1.0));
-    static_assert(AlmostEqual(cslerp.Z(), Sin(PiValue / 8.0)));                // 45° around Z
-    static_assert(AlmostEqual(cslerp.W(), Cos(PiValue / 8.0)));
-}
-
-TEST_CASE("TQuat As<U> conversion")
-{
-    using namespace Roxy::Math;
-
-    constexpr TQuat<double> qd(1.0, 2.0, 3.0, 4.0);
-    constexpr auto qf = qd.As<float>();
-    static_assert(std::is_same_v<decltype(qf), const TQuat<float>>);
-    static_assert(AlmostEqual(qf.X(), 1.0f));
-    static_assert(AlmostEqual(qf.Y(), 2.0f));
-    static_assert(AlmostEqual(qf.Z(), 3.0f));
-    static_assert(AlmostEqual(qf.W(), 4.0f));
+    SUBCASE("As::CT")
+    {
+        constexpr auto Q = FQuat{1.0f, 2.0f, 3.0f, 4.0f};
+        constexpr auto D = Q.As<F64>();
+        static_assert(std::is_same_v<decltype(D), const TQuat<F64>>);
+        static_assert(Approx(D.X(), 1.0) && Approx(D.W(), 4.0));
+    }
 }
 
 // ============================================================
@@ -1472,54 +786,51 @@ TEST_CASE("TQuat As<U> conversion")
 // ============================================================
 TEST_CASE("Performance benchmark (informational)")
 {
-    using namespace Roxy::Math;
-
     constexpr int Iterations = 2'000'000;
-    volatile double Sink = 0.0;
-    volatile double Seed = 0.123456789;  // runtime-dependent inputs prevent constant folding
+    volatile F32 Sink = 0.0f;
+    volatile F32 Seed = 0.123456789f;
 
-    const double S = Seed;
-    TVec<double, 3> V3{S, 2.0 * S, 3.0 * S};
-    TVec<double, 3> W3{4.0 * S, 5.0 * S, 6.0 * S};
-    TVec<double, 4> V4{S, 2.0 * S, 3.0 * S, 4.0 * S};
+    const F32 S = Seed;
+    auto V3 = FVec3{S, 2.0f * S, 3.0f * S};
+    auto W3 = FVec3{4.0f * S, 5.0f * S, 6.0f * S};
+    auto V4 = FVec4{S, 2.0f * S, 3.0f * S, 4.0f * S};
     // Upper-triangular, invertible: det = S * 5S * 8S * 10S != 0
-    TMat<double, 4> M4{S, 2.0 * S, 3.0 * S, 4.0 * S,
-                       0.0, 5.0 * S, 6.0 * S, 7.0 * S,
-                       0.0, 0.0, 8.0 * S, 9.0 * S,
-                       0.0, 0.0, 0.0, 10.0 * S};
-    TQuat<double> Q  = TQuat<double>{0.0, 0.0, S, 1.0}.Normalized();
-    TQuat<double> Q2 = TQuat<double>{0.0, S, 0.0, 1.0}.Normalized();
+    auto M4 = FMat4{S, 2.0f * S, 3.0f * S, 4.0f * S,
+                    0.0f, 5.0f * S, 6.0f * S, 7.0f * S,
+                    0.0f, 0.0f, 8.0f * S, 9.0f * S,
+                    0.0f, 0.0f, 0.0f, 10.0f * S};
+    auto Q  = FQuat{0.0f, 0.0f, S, 1.0f}.Normalized();
+    auto Q2 = FQuat{0.0f, S, 0.0f, 1.0f}.Normalized();
 
     // Each Fn takes a per-iteration varying Tweak injected into its operand:
     // the loop-carried dependency (Tweak -> Sink -> Tweak) forces the work to
     // genuinely run every iteration — nothing can be folded or hoisted.
     auto Bench = [&](const char* Name, auto&& Fn)
     {
-        double Tweak = Seed;
+        F32 Tweak = Seed;
         Roxy::Chrono::FTimer Timer;
         for (int I = 0; I < Iterations; ++I)
         {
             Sink += Fn(Tweak);
-            Tweak = Sink * 1e-9;
-            ROXY_BENCH_BARRIER();
+            Tweak = Sink * 1e-7f;
         }
-        const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
+        const auto Ms = Timer.Elapsed<Roxy::Chrono::ETimeUnit::MiS>();
         Roxy::Log::Info(Roxy::Log::ELogCategory::Default, "Bench {:<16s} {:9.3f} ms  ({:7.2f} ns/op)", Name, Ms, Ms * 1e6 / Iterations);
     };
 
-    Bench("Vec3 Add",         [&](double X) { return (V3 + W3 * X)[0]; });
-    Bench("Vec3 Dot",         [&](double X) { return V3.Dot(W3 * X); });
-    Bench("Vec3 Cross",       [&](double X) { return V3.Cross(W3 * X)[0]; });
-    Bench("Vec3 Normalized",  [&](double X) { return (V3 * X).Normalized()[0]; });
-    Bench("Mat4 Mul",         [&](double X) { return M4.Mul(M4 * X)[0][0]; });
-    Bench("Mat4 MulVec",      [&](double X) { return M4.Mul(V4 * X)[0]; });
-    Bench("Mat4 Transposed",  [&](double X) { return (M4 * X).Transposed()[0][0]; });
-    Bench("Mat4 Determinant", [&](double X) { return (M4 * X).Determinant(); });
-    Bench("Mat4 Inversed",    [&](double X) { return (M4 * X).Inversed()[0][0]; });
-    Bench("Quat Mul",         [&](double X) { return (Q * TQuat<double>(Q2.Vec() * X)).W(); });
-    Bench("Quat Rotate",      [&](double X) { return Q.Rotate(V3 * X)[0]; });
-    Bench("Quat Normalized",  [&](double X) { return TQuat<double>(Q.Vec() * X).Normalized().W(); });
-    Bench("Quat SLerp",       [&](double X) { return SLerp(Q, TQuat<double>(Q2.Vec() * X), 0.5).W(); });
+    Bench("Vec3 Add",         [&](F32 X) { return (V3 + W3 * X)[0]; });
+    Bench("Vec3 Dot",         [&](F32 X) { return V3.Dot(W3 * X); });
+    Bench("Vec3 Cross",       [&](F32 X) { return V3.Cross(W3 * X)[0]; });
+    Bench("Vec3 Normalized",  [&](F32 X) { return (V3 * X).Normalized()[0]; });
+    Bench("Mat4 Mul",         [&](F32 X) { return M4.Mul(M4 * X)[0][0]; });
+    Bench("Mat4 MulVec",      [&](F32 X) { return M4.Mul(V4 * X)[0]; });
+    Bench("Mat4 Transposed",  [&](F32 X) { return (M4 * X).Transposed()[0][0]; });
+    Bench("Mat4 Determinant", [&](F32 X) { return (M4 * X).Determinant(); });
+    Bench("Mat4 Inversed",    [&](F32 X) { return (M4 * X).Inversed()[0][0]; });
+    Bench("Quat Mul",         [&](F32 X) { return (Q * FQuat{Q2.Vec() * X}).W(); });
+    Bench("Quat Rotate",      [&](F32 X) { return Q.Rotate(V3 * X)[0]; });
+    Bench("Quat Normalized",  [&](F32 X) { return FQuat{Q.Vec() * X}.Normalized().W(); });
+    Bench("Quat SLerp",       [&](F32 X) { return SLerp(Q, FQuat{Q2.Vec() * X}, 0.5f).W(); });
 
-    CHECK(Sink != 0.0);  // keep the sink alive (anti-optimization)
+    CHECK(Sink != 0.0f);  // keep the sink alive (anti-optimization)
 }

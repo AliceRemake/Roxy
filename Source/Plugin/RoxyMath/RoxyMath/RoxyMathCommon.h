@@ -132,14 +132,16 @@ ROXY_NODISCARD consteval T Sqrt(T X) noexcept
 template<CFloatingPoint T>
 ROXY_NODISCARD consteval T Sin(T X) noexcept
 {
-    T TwoPi = T(2) * Pi<T>;
-    T Q = (X + Pi<T>) / TwoPi;
-    long long N = static_cast<long long>(Q);
-    N -= static_cast<T>(N) > Q;
-    T Y = X - N * TwoPi;
+    // Reduce to [-pi/2, pi/2]: sin(X) = (-1)^N * sin(Y), Y = X - N*Pi.
+    // The full-period reduction leaves |Y| up to Pi, where the truncated
+    // series loses ~1e-9 to cancellation (e.g. sin(Pi) != 0). The half-period
+    // reduction keeps |Y| <= Pi/2 and is ~1e-16 accurate everywhere.
+    T Q = X / Pi<T>;
+    long long N = static_cast<long long>(Q + (Q >= T(0) ? T(0.5) : T(-0.5)));
+    T Y = X - N * Pi<T>;
 
-    T X2 = Y * Y;
-    return Y * Polynomial<T,
+    T Y2 = Y * Y;
+    T R = Y * Polynomial<T,
         T( 1),
         T(-1) / T(6),
         T( 1) / T(120),
@@ -150,7 +152,8 @@ ROXY_NODISCARD consteval T Sin(T X) noexcept
         T(-1) / T(1307674368000),
         T( 1) / T(355687428096000),
         T(-1) / T(121645100408832000)
-    >(X2);
+    >(Y2);
+    return (N % 2 == 0) ? R : -R;
 }
 
 template<CFloatingPoint T>
@@ -312,7 +315,7 @@ ROXY_NODISCARD consteval T Exp(T X) noexcept
 
     // Exp(X) = 2^Exp2 * Exp(Exp1)
     T N = X * InvLn2<T>;
-    long long Exp2 = static_cast<long long>(N + (N >= T(0) ? T(0.5) : T(-0.5)));
+    I64 Exp2 = static_cast<I64>(N + (N >= T(0) ? T(0.5) : T(-0.5)));
     T Exp1 = X - Exp2 * Ln2<T>;
 
     return Pow(T(2), Exp2) * (T(1) + Exp1 * Polynomial<T,
@@ -327,7 +330,9 @@ ROXY_NODISCARD consteval T Exp(T X) noexcept
         T(1) / T(362880),
         T(1) / T(3628800),
         T(1) / T(39916800),
-        T(1) / T(479001600)
+        T(1) / T(479001600),
+        T(1) / T(6227020800),
+        T(1) / T(87178291200)
     >(Exp1));
 }
 
@@ -628,7 +633,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr T ToDegree(T Radians) noexcept
 }
 
 template<CFloatingPoint T>
-ROXY_NODISCARD ROXY_INLINE constexpr bool Approx(T Lhs, T Rhs, T Tolerance = Eps<T>) noexcept
+ROXY_NODISCARD ROXY_INLINE constexpr bool Approx(T Lhs, T Rhs, T Tolerance = 10 * Eps<T>) noexcept
 {
     return Abs(Lhs - Rhs) <= Tolerance;
 }

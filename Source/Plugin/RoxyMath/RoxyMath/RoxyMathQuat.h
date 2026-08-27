@@ -310,5 +310,5 @@ ROXY_NODISCARD ROXY_INLINE constexpr TQuat<T> SLerp(const TQuat<T>& A, const TQu
 
 namespace Roxy::Math
 {
-using FQuat = TQuat<float>;
+using FQuat = TQuat<F32>;
 }

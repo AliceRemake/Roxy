@@ -72,6 +72,10 @@ TEST_CASE("Roxy::Alloc::FAlignAllocator")
             Allocator.DeAllocate(Ptr);
         }
     }
+
+    SUBCASE("Performance Benchmark")
+    {
+    }
 }
 
 TEST_CASE("Roxy::Alloc::FArenaAllocator")
@@ -208,100 +212,8 @@ TEST_CASE("Roxy::Alloc::FArenaAllocator")
         REQUIRE(NewPtr != nullptr);
         CHECK(NewPtr == Ptrs[0]);
     }
-}
 
-TEST_CASE("Roxy::Alloc::Benchmark FAlignAllocator vs FArenaAllocator")
-{
-    Roxy::Log::SetPattern(Roxy::Log::DefaultPattern);
-
-    constexpr int NumAllocs    = 100000;
-    constexpr UIntPtr AllocSize = 64;
-    constexpr UIntPtr ArenaCap  = AllocSize * NumAllocs + 4096;
-    constexpr int WarmupRounds  = 3;
-    constexpr int MeasureRounds = 5;
-
-    #define PRINT_TIME(Label, ValueMs) \
-        ROXY_INFO(Roxy::Log::ELogCategory::Default, "{:<40}: {:.3f} ms", Label, (ValueMs))
-
-    ROXY_INFO(Roxy::Log::ELogCategory::Default, "{}", "=== Allocator Benchmark ===");
-    ROXY_INFO(Roxy::Log::ELogCategory::Default, "Allocations: {} x {} bytes each", NumAllocs, AllocSize);
-
-    FAlignAllocator AlignAlloc;
-    FArenaAllocator ArenaAlloc(ArenaCap);
-
-    // ---- FAlignAllocator: Allocate + DeAllocate ----
+    SUBCASE("Performance Benchmark")
     {
-        double TotalMs = 0.0;
-        for (int round = 0; round < WarmupRounds + MeasureRounds; ++round)
-        {
-            Roxy::Chrono::FTimer Timer;
-            for (int i = 0; i < NumAllocs; ++i)
-            {
-                FByte* p = AlignAlloc.Allocate(AllocSize);
-                AlignAlloc.DeAllocate(p);
-            }
-            const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
-            if (round >= WarmupRounds) TotalMs += Ms;
-        }
-        PRINT_TIME("FAlignAllocator (alloc+dealloc)", TotalMs / MeasureRounds);
     }
-
-    // ---- FArenaAllocator: Allocate only (no dealloc, use Rewind) ----
-    {
-        double TotalMs = 0.0;
-        for (int round = 0; round < WarmupRounds + MeasureRounds; ++round)
-        {
-            ArenaAlloc.Rewind();
-            Roxy::Chrono::FTimer Timer;
-            for (int i = 0; i < NumAllocs; ++i)
-            {
-                FByte* p = ArenaAlloc.Allocate(AllocSize);
-                REQUIRE(p != nullptr);
-            }
-            const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
-            if (round >= WarmupRounds) TotalMs += Ms;
-        }
-        PRINT_TIME("FArenaAllocator (alloc only)", TotalMs / MeasureRounds);
-    }
-
-    // ---- FArenaAllocator: Allocate + Rewind each iteration ----
-    {
-        // Ensure arena starts empty (fix: previous subcase may have left it exhausted)
-        ArenaAlloc.Rewind();
-        double TotalMs = 0.0;
-        for (int round = 0; round < WarmupRounds + MeasureRounds; ++round)
-        {
-            Roxy::Chrono::FTimer Timer;
-            for (int i = 0; i < NumAllocs; ++i)
-            {
-                FByte* p = ArenaAlloc.Allocate(AllocSize);
-                REQUIRE(p != nullptr);
-            }
-            ArenaAlloc.Rewind();
-            const double Ms = Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>();
-            if (round >= WarmupRounds) TotalMs += Ms;
-        }
-        PRINT_TIME("FArenaAllocator (alloc+rewind loop)", TotalMs / MeasureRounds);
-    }
-
-    SUBCASE("Large allocation stress")
-    {
-        constexpr UIntPtr LargeSize = 10 * 1024 * 1024; // 10 MiB
-        {
-            Roxy::Chrono::FTimer Timer;
-            FByte* p = AlignAlloc.Allocate(LargeSize);
-            REQUIRE(p != nullptr);
-            AlignAlloc.DeAllocate(p);
-            PRINT_TIME("FAlignAllocator (10 MiB single)", Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>());
-        }
-        FArenaAllocator LargeArena(LargeSize + 1024);
-        {
-            Roxy::Chrono::FTimer Timer;
-            FByte* p = LargeArena.Allocate(LargeSize);
-            REQUIRE(p != nullptr);
-            PRINT_TIME("FArenaAllocator (10 MiB single)", Timer.GetElapsed<Roxy::Chrono::ETimeUnit::MiS>());
-        }
-    }
-
-    #undef PRINT_TIME
 }

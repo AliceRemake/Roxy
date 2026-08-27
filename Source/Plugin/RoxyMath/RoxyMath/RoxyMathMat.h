@@ -777,7 +777,7 @@ ROXY_NODISCARD ROXY_INLINE constexpr TMat<T, Dim> operator/(const TMat<T, Dim>& 
 
 namespace Roxy::Math
 {
-using FMat2 = TMat<float, 2>;
-using FMat3 = TMat<float, 3>;
-using FMat4 = TMat<float, 4>;
+using FMat2 = TMat<F32, 2>;
+using FMat3 = TMat<F32, 3>;
+using FMat4 = TMat<F32, 4>;
 }

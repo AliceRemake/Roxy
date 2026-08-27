@@ -1,9 +1,10 @@
+OPTION(ROXY_ENABLE_COVERAGE "" OFF)
 IF(ROXY_ENABLE_COVERAGE)
     IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         ADD_COMPILE_OPTIONS(--coverage -O0 -g)
         LINK_LIBRARIES(--coverage)
     ELSE()
-        message(WARNING "Coverage only supported with GCC")
+        MESSAGE(WARNING "Coverage Only Supported With GCC")
     ENDIF()
 ENDIF()
 
