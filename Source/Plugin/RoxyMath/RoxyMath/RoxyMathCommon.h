@@ -2,7 +2,7 @@
 
 #include <RoxySTD/RoxySTD.h>
 
-namespace Roxy::Math // Concept
+namespace Roxy::Math
 {
 template <typename T>
 concept CIntegral = std::is_integral_v<T>;
@@ -14,10 +14,10 @@ template <typename T>
 concept CArithmetic = CIntegral<T> || CFloatingPoint<T>;
 }
 
-namespace Roxy::Math // Constant
+namespace Roxy::Math
 {
 template<CFloatingPoint T>
-inline constexpr T Eps  = std::numeric_limits<T>::epsilon();
+inline constexpr T Eps = std::numeric_limits<T>::epsilon();
 
 template<CFloatingPoint T>
 inline constexpr T Pi = std::numbers::pi_v<T>;
@@ -611,6 +611,12 @@ template<CFloatingPoint T>
 ROXY_NODISCARD ROXY_INLINE constexpr T ToDegree(T Radians) noexcept
 {
     return Radians * RadToDegCoeff<T>;
+}
+
+template<CFloatingPoint T>
+ROXY_NODISCARD ROXY_INLINE constexpr bool Approx(T Lhs, T Rhs, T Tolerance = Eps<T>) noexcept
+{
+    return Abs(Lhs - Rhs) <= Tolerance;
 }
 
 }
