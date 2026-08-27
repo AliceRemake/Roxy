@@ -96,7 +96,7 @@ ROXY_NODISCARD consteval T Abs(T X) noexcept
 }
 
 template<typename T, T Coeff, T... Coeffs>
-ROXY_NODISCARD consteval T Poly(T X) noexcept
+ROXY_NODISCARD consteval T Polynomial(T X) noexcept
 {
     if constexpr (sizeof...(Coeffs) == 0)
     {
@@ -104,7 +104,7 @@ ROXY_NODISCARD consteval T Poly(T X) noexcept
     }
     else
     {
-        return Coeff + X * Poly<T, Coeffs...>(X);
+        return Coeff + X * Polynomial<T, Coeffs...>(X);
     }
 }
 
@@ -139,7 +139,7 @@ ROXY_NODISCARD consteval T Sin(T X) noexcept
     T Y = X - N * TwoPi;
 
     T X2 = Y * Y;
-    return Y * Poly<T,
+    return Y * Polynomial<T,
         T( 1),
         T(-1) / T(6),
         T( 1) / T(120),
@@ -174,8 +174,17 @@ ROXY_NODISCARD consteval T Atan(T X) noexcept
     if (X == T(1)) { return T(0.25) * Pi<T>; }
     if (X >  T(1)) { return T(0.5) * Pi<T> - Atan(T(1) / X); }
 
-    T X2 = X * X;
-    return X * Poly<T,
+    // Reduce [tan(pi/8), 1] onto [0, tan(pi/8)], where the Taylor series
+    // converges fast: atan(x) = pi/4 + atan((x - 1) / (x + 1)).
+    // Without this, the series is catastrophically inaccurate near |x| -> 1.
+    constexpr T Threshold = T(0.4142135623730950488); // tan(pi/8) = sqrt2 - 1
+    if (X > Threshold)
+    {
+        return T(0.25) * Pi<T> + Atan((X - T(1)) / (X + T(1)));
+    }
+
+    T SqrX = X * X;
+    return X * Polynomial<T,
         T( 1),
         T(-1) / T( 3),
         T( 1) / T( 5),
@@ -183,8 +192,12 @@ ROXY_NODISCARD consteval T Atan(T X) noexcept
         T( 1) / T( 9),
         T(-1) / T(11),
         T( 1) / T(13),
-        T(-1) / T(15)
-    >(X2);
+        T(-1) / T(15),
+        T( 1) / T(17),
+        T(-1) / T(19),
+        T( 1) / T(21),
+        T(-1) / T(23)
+    >(SqrX);
 }
 
 template<CFloatingPoint T>
@@ -210,6 +223,7 @@ ROXY_NODISCARD consteval T Asin(T X) noexcept
 template<CFloatingPoint T>
 ROXY_NODISCARD consteval T Acos(T X) noexcept
 {
+    // Accuracy near |x| -> 1 comes from Atan's range reduction (see Atan above).
     return T(0.5) * Pi<T> - Asin(X);
 }
 
@@ -301,7 +315,7 @@ ROXY_NODISCARD consteval T Exp(T X) noexcept
     long long Exp2 = static_cast<long long>(N + (N >= T(0) ? T(0.5) : T(-0.5)));
     T Exp1 = X - Exp2 * Ln2<T>;
 
-    return Pow(T(2), Exp2) * (T(1) + Exp1 * Poly<T,
+    return Pow(T(2), Exp2) * (T(1) + Exp1 * Polynomial<T,
         T(1),
         T(1) / T(2),
         T(1) / T(6),

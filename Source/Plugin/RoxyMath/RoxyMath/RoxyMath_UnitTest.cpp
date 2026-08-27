@@ -1446,14 +1446,12 @@ TEST_CASE("TQuat interpolation (Lerp, Nlerp, Slerp)")
     constexpr auto cnlerp = NLerp(cq1, cq2, 0.5);
     static_assert(AlmostEqual(cnlerp.Length(), 1.0));
 
-    // Note: constexpr SLerp is NOT asserted here — its compile-time Acos goes through
-    // Detail::Atan, whose polynomial accuracy degrades badly near |x| -> 1
-    // (DotVal = sqrt(2)/2 lands in that zone). Runtime SLerp uses std::acos and is
-    // accurate (covered above). Fix Detail::Atan first, then enable the check:
-    // constexpr auto cslerp = SLerp(cq1, cq2, 0.5);
-    // static_assert(AlmostEqual(cslerp.Length(), 1.0));
-    // static_assert(AlmostEqual(cslerp.Z(), Sin(PiValue / 8.0)));
-    // static_assert(AlmostEqual(cslerp.W(), Cos(PiValue / 8.0)));
+    // constexpr SLerp: exercises the compile-time Acos / Sin / InvSqrt path.
+    // (Detail::Atan was fixed with a range reduction; see RoxyMathCommon.h.)
+    constexpr auto cslerp = SLerp(cq1, cq2, 0.5);
+    static_assert(AlmostEqual(cslerp.Length(), 1.0));
+    static_assert(AlmostEqual(cslerp.Z(), Sin(PiValue / 8.0)));                // 45° around Z
+    static_assert(AlmostEqual(cslerp.W(), Cos(PiValue / 8.0)));
 }
 
 TEST_CASE("TQuat As<U> conversion")
