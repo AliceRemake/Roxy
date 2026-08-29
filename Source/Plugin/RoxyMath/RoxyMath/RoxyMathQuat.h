@@ -8,17 +8,17 @@ template<CFloatingPoint T>
 class TQuat
 {
 protected:
-    TVec<T, 4> Payload{};
+    TVec<T, 4> Payload;
 
 public:
     #pragma region Construct
-    ROXY_NODISCARD ROXY_INLINE constexpr TQuat() : Payload({T{0}, T{0}, T{0}, T{0}}) {}
+    ROXY_NODISCARD ROXY_INLINE constexpr TQuat() noexcept = default;
 
-    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(T X, T Y, T Z, T W) : Payload({X, Y, Z, W}) {}
+    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(T X, T Y, T Z, T W) noexcept : Payload({X, Y, Z, W}) {}
 
-    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(const TVec<T, 4>& V) : Payload(V) {}
+    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(const TVec<T, 4>& V) noexcept : Payload(V) {}
 
-    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(const TVec<T, 3>& V, T W) : Payload({V.X(), V.Y(), V.Z(), W}) {}
+    ROXY_NODISCARD ROXY_INLINE constexpr explicit TQuat(const TVec<T, 3>& V, T W) noexcept : Payload({V.X(), V.Y(), V.Z(), W}) {}
 
     ROXY_NODISCARD ROXY_INLINE static constexpr TQuat Zero() noexcept
     {
@@ -311,4 +311,5 @@ ROXY_NODISCARD ROXY_INLINE constexpr TQuat<T> SLerp(const TQuat<T>& A, const TQu
 namespace Roxy::Math
 {
 using FQuat = TQuat<F32>;
+static_assert(std::is_trivial_v<FQuat>);
 }

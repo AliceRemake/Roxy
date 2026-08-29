@@ -16,7 +16,7 @@ class TVecBase
 protected:
     using FVec = TVec<T, Dim>;
     using FMat = TMat<T, Dim>;
-    alignas(16) T Payload[Dim == 3 ? 4 : Dim] {};
+    alignas(16) T Payload[Dim == 3 ? 4 : Dim];
 
 public:
     #pragma region Construct
@@ -582,4 +582,7 @@ namespace Roxy::Math
 using FVec2 = TVec<F32, 2>;
 using FVec3 = TVec<F32, 3>;
 using FVec4 = TVec<F32, 4>;
+static_assert(std::is_trivial_v<FVec2>);
+static_assert(std::is_trivial_v<FVec3>);
+static_assert(std::is_trivial_v<FVec4>);
 }

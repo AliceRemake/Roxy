@@ -10,7 +10,7 @@ class TMatBase
 protected:
     using FVec = TVec<T, Dim>;
     using FMat = TMat<T, Dim>;
-    FVec Payload[Dim]{};
+    FVec Payload[Dim];
 
 public:
     #pragma region Construct
@@ -780,4 +780,7 @@ namespace Roxy::Math
 using FMat2 = TMat<F32, 2>;
 using FMat3 = TMat<F32, 3>;
 using FMat4 = TMat<F32, 4>;
+static_assert(std::is_trivial_v<FMat2>);
+static_assert(std::is_trivial_v<FMat3>);
+static_assert(std::is_trivial_v<FMat4>);
 }
